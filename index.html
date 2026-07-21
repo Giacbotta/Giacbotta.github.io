@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giacomo Bottacin | Process Improvement Portfolio</title>
+<style>
+  :root {
+    --navy: #1A2B3C;
+    --teal: #0E765A;
+    --grey: #555555;
+    --black: #222222;
+    --bg: #FAFAF9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--black);
+    background: var(--bg);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 56px 24px 80px; }
+  header { border-bottom: 2px solid var(--teal); padding-bottom: 18px; margin-bottom: 36px; }
+  h1 { color: var(--navy); font-size: 2.1rem; margin: 0 0 6px; }
+  .tagline { color: var(--teal); font-size: 1.05rem; font-weight: 600; margin: 0 0 10px; }
+  .contact { color: var(--grey); font-size: 0.92rem; }
+  .contact a { color: var(--grey); text-decoration: none; }
+  .intro { font-size: 1rem; margin-bottom: 44px; max-width: 680px; }
+  .case { margin-bottom: 52px; }
+  .case-label { color: var(--teal); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+  .case h2 { color: var(--navy); font-size: 1.35rem; margin: 0 0 6px; }
+  .case .meta { color: var(--grey); font-size: 0.88rem; margin-bottom: 16px; font-style: italic; }
+  .case h3 { color: var(--navy); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 18px 0 6px; }
+  .case p, .case ul { margin: 0 0 8px; font-size: 0.97rem; }
+  .case ul { padding-left: 20px; }
+  .results { background: #F0F5F3; border-left: 3px solid var(--teal); padding: 12px 16px; margin-top: 10px; }
+  .results div { font-size: 0.95rem; margin-bottom: 4px; }
+  .results strong { color: var(--navy); }
+  footer { border-top: 1px solid #ddd; padding-top: 20px; margin-top: 40px; color: var(--grey); font-size: 0.85rem; }
+  hr.rule { border: none; border-top: 1px solid #e2e2e2; margin: 40px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>GIACOMO BOTTACIN</h1>
+    <p class="tagline">Process Improvement Leader, EU Operations &amp; CX</p>
+    <p class="contact">Athens, Greece &nbsp;|&nbsp; +39 331 275 1121 &nbsp;|&nbsp;
+      <a href="mailto:giacbotta@gmail.com">giacbotta@gmail.com</a> &nbsp;|&nbsp;
+      <a href="https://linkedin.com/in/giacomo-bottacin-539856b9">linkedin.com/in/giacomo-bottacin-539856b9</a>
+    </p>
+  </header>
+
+  <p class="intro">
+    Three projects that show the same pattern: find the process problem nobody has
+    named yet, build the fix, and put data behind it. Two are inside DHL Express's
+    European operations; one is a small business I own and automated myself.
+  </p>
+
+  <!-- CASE STUDY 1 -->
+  <div class="case">
+    <div class="case-label">Case Study 01</div>
+    <h2>Finding the data gap that was quietly skewing pickup complaints</h2>
+    <div class="meta">DHL Express &middot; Customer Experience Regional Manager, EU &middot; Ongoing, end-to-end owner</div>
+
+    <h3>Context</h3>
+    <p>I own pickup customer experience end to end across DHL Express's European
+    region, coordinating regional, global, and local stakeholders to diagnose
+    issues, pilot fixes, and scale them across the network.</p>
+
+    <h3>Challenge</h3>
+    <p>Pickup-related complaints were rising and nobody could see why. Two problems
+    were tangled together: customers were offered pickup time windows that did not
+    match real operational capacity, and courier no-shows were being logged the
+    same way as genuine customer unavailability, because no data category existed
+    to separate them. That second gap had corrupted root-cause data for years,
+    worse on ad-hoc pickups than scheduled ones.</p>
+
+    <h3>What I built and piloted</h3>
+    <ul>
+      <li><strong>Driver verification app:</strong> requires the courier to photograph the doorbell and captures geolocation when marking a pickup as "customer not ready." Ends false attribution at the source.</li>
+      <li><strong>Capacity realignment:</strong> realigned the pickup windows offered to customers with real operational capacity.</li>
+      <li><strong>Proactive failed-pickup automation:</strong> automatically messages the customer when a pickup fails and supports rescheduling, something the process never did before.</li>
+    </ul>
+
+    <div class="results">
+      <div><strong>&minus;20%</strong> overall company complaints in the Austria/Germany driver-verification pilot</div>
+      <div><strong>+10-point</strong> lift in pickup NPS in the Hungary capacity-realignment pilot</div>
+      <div><strong>Zero detractors</strong> so far on the topic in the Portugal/Sweden proactive-messaging pilot</div>
+    </div>
+    <p style="margin-top:10px; color:var(--grey); font-size:0.88rem;">Status: all three are live pilots; scale-up across the network is in progress.</p>
+  </div>
+
+  <hr class="rule">
+
+  <!-- CASE STUDY 2 -->
+  <div class="case">
+    <div class="case-label">Case Study 02</div>
+    <h2>Cutting a multi-week pricing cycle without waiting for other teams' systems</h2>
+    <div class="meta">DHL Express &middot; Senior Continuous Improvement Internal Consultant, EU &middot; 2023</div>
+
+    <h3>Context</h3>
+    <p>The regional tender and contract-pricing process sets pricing for DHL
+    Express's major-account contracts across the EU, including global and
+    corporate accounts with EU lanes, covering the bulk of the division's
+    key-account revenue.</p>
+
+    <h3>Challenge</h3>
+    <p>The cycle took 33 days. Part of the delay sat with other departments,
+    especially Pricing, whose systems were locked into brittle Excel macros and
+    SharePoints they were unwilling to change. There was no clean API to build
+    against.</p>
+
+    <h3>What I built</h3>
+    <p>A production tool combining Power Apps and Power Automate, with heavy LLM
+    support during the build, engineered around the legacy systems rather than
+    waiting for them to modernize.</p>
+
+    <div class="results">
+      <div><strong>33 &rarr; 23 days</strong> (about 30% faster) on the regional tender cycle, across the bulk of the EU division's key-account revenue</div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- CASE STUDY 3 -->
+  <div class="case">
+    <div class="case-label">Case Study 03</div>
+    <h2>Automating a small business until it runs itself</h2>
+    <div class="meta">Nutrie Srl &middot; Owner &middot; Venice, Italy &middot; 2023 to present</div>
+
+    <h3>Context</h3>
+    <p>Nutrie is a self-service luggage-storage business in Venice, acquired with a
+    partner in 2023 and run entirely remotely.</p>
+
+    <h3>Challenge</h3>
+    <p>Bookings and customer questions were handled manually, generating 4 to 5
+    enquiries a day, all of it my time.</p>
+
+    <h3>What I built</h3>
+    <p>I automated the booking flow and customer communication myself, so the
+    business runs without day-to-day intervention.</p>
+
+    <div class="results">
+      <div><strong>Under 1 enquiry/week</strong>, down from 4 to 5 a day</div>
+      <div><strong>Revenue roughly doubled</strong> (about &euro;23k to &euro;47k) over two years, with costs held flat</div>
+      <div>Runs hands-off for weeks at a time; about 2 hours a month of admin</div>
+    </div>
+  </div>
+
+  <footer>
+    <p>These are working case studies from an active career, not a finished
+    portfolio piece. Details are shared at the level appropriate for a public page;
+    ask me for more depth on any of them.</p>
+  </footer>
+
+</div>
+</body>
+</html>
