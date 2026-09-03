@@ -29,13 +29,11 @@ on margin, which is why it is a usable test bed.
 
 - One post a week.
 - Real numbers only. No estimate presented as data.
-- Every metric reported with its absolute value and its change, never the percentage alone.
-- Fixed metric set week over week. The comparison only works if the series is stable.
-- Mistakes get written with numbers, not apologies.
-
+- Diary with experiments, learnings and failures
+  
 ## Metrics tracked
 
-Total deposits. Revenue. Average revenue per deposit. Occupancy rate.
+Total deposits. Revenues. Occupancy rate. Margins.
 Customer acquisition cost. Website sessions. Website conversion rate.
 
 Success criterion for the experiment: margin up and my hours down, in the same week.
