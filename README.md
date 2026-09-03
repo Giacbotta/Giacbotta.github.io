@@ -16,7 +16,9 @@ on margin, which is why it is a usable test bed.
 | --- | --- |
 | `index.html` | The site. Landing page plus the full text of every post. |
 | `posts/` | Each post as plain markdown, in publication order. |
-| `stack/` | What the system is built from, and what still runs by hand. |
+| `stack/` | What the system is built from, and the code that runs it. |
+| `stack/vault/` | The rules the company brain runs on, and the Python quality gate that enforces them. |
+| `stack/automations/` | The Apps Script and Python jobs behind reporting, data collection and review requests. |
 
 ## The posts
 
