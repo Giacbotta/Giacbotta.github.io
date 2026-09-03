@@ -14,9 +14,9 @@ site to add the new location.
 
 **LEARNINGS**
 
-- I already knew bookings had dropped. I had promised myself I would find out why. I had not.
+- I already knew bookings had dropped. I had promised myself I would find out why. I had not. It was a stupid bug that will probably not repeat.
+  BUT...
 - An AI that knows your systems finds issues you may have ignored.
-- It was a stupid bug that will probably not repeat.
 - A potential value of the brain is not letting unobserved issues stay uncovered.
 
 **NUMBERS**
