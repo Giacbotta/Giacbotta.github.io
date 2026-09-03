@@ -1,7 +1,5 @@
 # Post 4 / First wow
 
-First wow: the setup alone found the cause of a booking drop.
-
 The first surprise about having a [company brain](../stack/vault/) is that I got
 value before it was finished. Setting it up meant answering questions. A lot of
 them. What the machine understood was the interesting part: not just how each
