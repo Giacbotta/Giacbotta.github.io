@@ -1,94 +1,94 @@
-# Export giornaliero depositi Pisa → Google Sheet
+# Daily Pisa deposits export -> Google Sheet
 
-Scarica tutti i depositi della sede di Pisa dall'API del gestionale Onniversum
-e li riversa su un Google Sheet, su due schede:
+Downloads every deposit at the Pisa site from the Onniversum management API
+and pours it into a Google Sheet, across two tabs:
 
-- **Depositi Pisa** — una riga per deposito, lo specchio del pannello.
-- **Lista invio** — un indirizzo per persona, non per deposito. Solo depositi
-  ritirati e solo righe con email valida. Chi ha lasciato tre bagagli in tre
-  cassetti compare una volta sola, con il conteggio e la data dell'ultimo
-  ritiro: è la lista da cui parte la richiesta di recensione.
+- **Depositi Pisa**, one row per deposit, the mirror of the panel.
+- **Lista invio**, one address per person, not per deposit. Only picked-up
+  deposits and only rows with a valid email. Someone who left three bags in
+  three lockers shows up once, with the count and the date of the last
+  pickup: it is the list the review request starts from.
 
-Il foglio viene **riscritto per intero** a ogni esecuzione: è sempre uno specchio
-del pannello. Se il PC è spento un giorno, la corsa dopo recupera da sola —
-non c'è stato da tenere allineato e non esistono giorni "persi".
+The sheet is **rewritten in full** on every run: it is always a mirror of the
+panel. If the PC is off for a day, the next run recovers on its own, there is
+no state to keep aligned and no "lost" days.
 
-> **Attenzione al `.env`**: contiene la password del gestionale. Questa cartella
-> sta fuori da OneDrive apposta, così le credenziali non si sincronizzano sul
-> cloud. Non spostarla dentro il Vault.
+> **Watch the `.env`**: it holds the management-system password. This folder
+> sits outside OneDrive on purpose, so the credentials do not sync to the
+> cloud. Do not move it inside the Vault.
 
-## Cosa NON finisce sul foglio
+## What does NOT end up on the sheet
 
-`pickupCode` (il codice che apre il cassetto), `apiKey`, `sessionId` e i codici
-di pre-autorizzazione sono esclusi di proposito: il foglio può essere condiviso,
-quei campi no. Sono nella lista `CAMPI_ESCLUSI` dello script.
+`pickupCode` (the code that opens the locker), `apiKey`, `sessionId` and the
+pre-authorization codes are excluded on purpose: the sheet can be shared,
+those fields cannot. They are in the `CAMPI_ESCLUSI` list in the script.
 
-Tutti gli altri campi passano, compresi quelli nuovi che il fornitore dovesse
-aggiungere in futuro — così non spariscono in silenzio.
+Every other field passes through, including new ones the vendor might add in
+the future, so nothing disappears in silence.
 
-## Installazione (una volta sola)
+## Installation (once only)
 
-**1. Dipendenze**
+**1. Dependencies**
 
 ```bash
 python -m pip install -r "C:\path\to\automations\pisa-export\requirements.txt"
 ```
 
-**2. Credenziali del gestionale**
+**2. Management-system credentials**
 
-Copia `.env.example` in `.env` e compila `PISA_EMAIL` e `PISA_PASSWORD` con le
-credenziali di `company@example.com`.
+Copy `.env.example` to `.env` and fill in `PISA_EMAIL` and `PISA_PASSWORD`
+with the credentials for `company@example.com`.
 
-**3. Accesso al Google Sheet**
+**3. Access to the Google Sheet**
 
-Serve un *service account*, cioè un utente tecnico che scriva sul foglio senza
-passare dal tuo login:
+You need a *service account*, that is a technical user that writes to the
+sheet without going through your own login:
 
-1. Vai su <https://console.cloud.google.com/> e crea un progetto (nome libero, es. `nutrie-automazioni`).
-2. *API e servizi → Libreria* → cerca **Google Sheets API** → **Abilita**.
-3. *API e servizi → Credenziali → Crea credenziali → Account di servizio*. Nome libero, nessun ruolo necessario.
-4. Aprilo → scheda **Chiavi** → *Aggiungi chiave → Crea nuova chiave → JSON*. Scarica il file.
-5. Rinominalo `service-account.json` e mettilo in questa cartella.
-6. Apri il file: copia il valore di `client_email` (finisce per `.iam.gserviceaccount.com`).
-7. Crea il Google Sheet di destinazione, premi **Condividi** e incolla quell'indirizzo come **Editor**.
-8. Metti l'ID del foglio in `SHEET_ID` nel `.env` (è la parte lunga dell'URL, tra `/d/` e `/edit`).
+1. Go to <https://console.cloud.google.com/> and create a project (any name, e.g. `nutrie-automazioni`).
+2. *APIs & Services -> Library* -> search **Google Sheets API** -> **Enable**.
+3. *APIs & Services -> Credentials -> Create Credentials -> Service Account*. Any name, no role needed.
+4. Open it -> **Keys** tab -> *Add Key -> Create new key -> JSON*. Download the file.
+5. Rename it `service-account.json` and put it in this folder.
+6. Open the file: copy the `client_email` value (it ends in `.iam.gserviceaccount.com`).
+7. Create the destination Google Sheet, press **Share** and paste that address in as **Editor**.
+8. Put the sheet's ID in `SHEET_ID` in the `.env` (it is the long part of the URL, between `/d/` and `/edit`).
 
-## Uso
+## Use
 
 ```bash
 python "C:\path\to\automations\pisa-export\export_depositi.py" --dry-run
 ```
 
-Scarica e riepiloga senza scrivere niente. È il comando da usare per la prima prova.
+Downloads and summarizes without writing anything. This is the command to use for the first try.
 
 ```bash
 python "C:\path\to\automations\pisa-export\export_depositi.py"
 ```
 
-Scrive sul Google Sheet.
+Writes to the Google Sheet.
 
-Altri due:
+Two more:
 
-- `--schema` stampa tutti i campi che l'API restituisce, utile se il fornitore cambia qualcosa.
-- `--csv depositi.csv` scrive due CSV invece del foglio — `depositi.csv` e
-  `depositi-lista-invio.csv` — per provare senza configurare Google.
+- `--schema` prints every field the API returns, useful if the vendor changes something.
+- `--csv depositi.csv` writes two CSVs instead of the sheet, `depositi.csv` and
+  `depositi-lista-invio.csv`, to test without setting up Google.
 
-> Il foglio contiene email e telefoni dei clienti. Va condiviso con le singole
-> persone che devono vederlo, mai con «chiunque abbia il link».
+> The sheet holds customers' emails and phone numbers. Share it with the
+> specific people who need to see it, never with "anyone with the link".
 
-## Esecuzione automatica ogni giorno
+## Daily automatic run
 
-Il comando qui sotto crea l'attività pianificata di Windows che lancia lo script
-ogni giorno alle 03:30:
+The command below creates the Windows scheduled task that runs the script
+every day at 03:30:
 
 ```bash
 schtasks /Create /TN "Nutrie - Export depositi Pisa" /TR "python \"C:\path\to\automations\pisa-export\export_depositi.py\"" /SC DAILY /ST 03:30 /F
 ```
 
-Il PC deve essere acceso a quell'ora. Se è spento, non si perde nulla: la corsa
-successiva riallinea tutto il foglio.
+The PC has to be on at that time. If it is off, nothing is lost: the next
+run realigns the whole sheet.
 
-Per controllare o togliere l'attività:
+To check or remove the task:
 
 ```bash
 schtasks /Query /TN "Nutrie - Export depositi Pisa"
@@ -98,17 +98,17 @@ schtasks /Query /TN "Nutrie - Export depositi Pisa"
 schtasks /Delete /TN "Nutrie - Export depositi Pisa" /F
 ```
 
-## Se un giorno smette di funzionare
+## If it stops working one day
 
-Lo script parla con `api.locker-vendor.example`, che è l'**ambiente di
-sviluppo** del fornitore. Se Onniversum sposta il servizio su un dominio di
-produzione, va cambiato `BASE_URL` in cima allo script. Vale la pena chiedergli
-se quel dominio di produzione esiste già.
+The script talks to `api.locker-vendor.example`, which is the vendor's
+**development** environment. If Onniversum moves the service to a production
+domain, `BASE_URL` at the top of the script needs to change. It is worth
+asking them whether that production domain already exists.
 
-Errori tipici:
+Typical errors:
 
-| Messaggio | Causa |
+| Message | Cause |
 |---|---|
-| `Login rifiutato` | password cambiata sul pannello |
-| `Nessun deposito restituito` | l'account non vede più l'hub |
-| `403` da Google | il foglio non è condiviso col service account |
+| `Login rejected` | password changed on the panel |
+| `No deposits returned` | the account no longer sees the hub |
+| `403` from Google | the sheet is not shared with the service account |

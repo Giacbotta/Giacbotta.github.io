@@ -1,18 +1,18 @@
 """
-Export giornaliero dei depositi della sede di Pisa su Google Sheet.
+Daily export of the Pisa site deposits to a Google Sheet.
 
-Sorgente: API del gestionale Onniversum (api.locker-vendor.example/api),
+Source: Onniversum management API (api.locker-vendor.example/api),
 tenant Self Luggage Storage Pisa (HUB-001).
 
-Il foglio viene riscritto per intero a ogni esecuzione, quindi e' sempre uno
-specchio del pannello: se un giorno la macchina e' spenta, la corsa successiva
-recupera da sola i giorni mancanti. Nessuno stato viene tenuto in locale.
+The sheet is rewritten in full on every run, so it is always a mirror of the
+panel: if the machine is off for a day, the next run recovers the missing
+days on its own. No state is kept locally.
 
-Uso:
-    python export_depositi.py --schema     # stampa i campi che l'API restituisce
-    python export_depositi.py --dry-run    # scarica e riepiloga, non scrive nulla
+Use:
+    python export_depositi.py --schema     # prints the fields the API returns
+    python export_depositi.py --dry-run    # downloads and summarizes, writes nothing
     python export_depositi.py --csv out.csv
-    python export_depositi.py              # scrive sul Google Sheet
+    python export_depositi.py              # writes to the Google Sheet
 """
 
 from __future__ import annotations
@@ -28,12 +28,12 @@ from pathlib import Path
 import requests
 
 BASE_URL = "https://api.locker-vendor.example/api"
-PAGE_SIZE = 100  # tetto imposto dal server: valori piu' alti vengono troncati
+PAGE_SIZE = 100  # cap set by the server: higher values get truncated
 TIMEOUT = 30
 
-# Campi che NON devono finire sul foglio. pickupCode e' il codice che apre il
-# cassetto e apiKey e' la chiave del chiosco: su un foglio che puo' essere
-# condiviso non ci vanno. Gli altri sono rumore tecnico.
+# Fields that must NOT end up on the sheet. pickupCode is the code that opens
+# the locker and apiKey is the kiosk's key: on a sheet that can be shared,
+# they do not belong. The others are technical noise.
 CAMPI_ESCLUSI = {
     "pickupCode",
     "apiKey",
@@ -49,9 +49,9 @@ CAMPI_ESCLUSI = {
     "_id",
 }
 
-# Colonne note, nell'ordine in cui vogliamo leggerle. I campi che l'API
-# restituisce e che non sono in questa lista vengono aggiunti in coda, cosi'
-# se il fornitore ne introduce di nuovi non li perdiamo in silenzio.
+# Known columns, in the order we want to read them. Fields the API returns
+# that are not in this list get appended at the end, so if the vendor
+# introduces new ones we do not lose them in silence.
 COLONNE_PREFERITE = [
     "paccoId",
     "status",
@@ -87,11 +87,11 @@ COLONNE_PREFERITE = [
 
 
 # --------------------------------------------------------------------------
-# configurazione
+# configuration
 # --------------------------------------------------------------------------
 
 def carica_env() -> dict[str, str]:
-    """Legge il file .env accanto allo script. Le variabili d'ambiente vincono."""
+    """Reads the .env file next to the script. Environment variables win."""
     valori: dict[str, str] = {}
     percorso = Path(__file__).with_name(".env")
     if percorso.exists():
@@ -108,12 +108,12 @@ def carica_env() -> dict[str, str]:
 def richiedi(env: dict[str, str], chiave: str) -> str:
     valore = env.get(chiave, "")
     if not valore:
-        sys.exit(f"Manca {chiave} nel file .env (copia .env.example e compilalo).")
+        sys.exit(f"Missing {chiave} in the .env file (copy .env.example and fill it in).")
     return valore
 
 
 # --------------------------------------------------------------------------
-# API del gestionale
+# management-system API
 # --------------------------------------------------------------------------
 
 def login(email: str, password: str) -> str:
@@ -123,16 +123,16 @@ def login(email: str, password: str) -> str:
         timeout=TIMEOUT,
     )
     if risposta.status_code == 401:
-        sys.exit("Login rifiutato: email o password non validi.")
+        sys.exit("Login rejected: invalid email or password.")
     risposta.raise_for_status()
     token = risposta.json().get("access_token")
     if not token:
-        sys.exit(f"Login riuscito ma senza access_token. Risposta: {risposta.text[:300]}")
+        sys.exit(f"Login succeeded but no access_token. Response: {risposta.text[:300]}")
     return token
 
 
 def scarica_depositi(token: str, hub_id: str | None = None) -> list[dict]:
-    """Scarica tutte le pagine di /admin/deposits."""
+    """Downloads every page of /admin/deposits."""
     intestazioni = {"Authorization": f"Bearer {token}"}
     depositi: list[dict] = []
     pagina = 1
@@ -152,18 +152,18 @@ def scarica_depositi(token: str, hub_id: str | None = None) -> list[dict]:
         corpo = risposta.json()
         depositi.extend(corpo.get("items", []))
         pagine_totali = corpo.get("totalPages", 1) or 1
-        print(f"  pagina {pagina}/{pagine_totali} — {len(depositi)} depositi finora", flush=True)
+        print(f"  page {pagina}/{pagine_totali}, {len(depositi)} deposits so far", flush=True)
         pagina += 1
 
     return depositi
 
 
 # --------------------------------------------------------------------------
-# normalizzazione
+# normalization
 # --------------------------------------------------------------------------
 
 def appiattisci(deposito: dict, prefisso: str = "") -> dict:
-    """Riduce l'oggetto annidato a una riga piatta: billing.dueNowEuro, ecc."""
+    """Flattens the nested object into one flat row: billing.dueNowEuro, etc."""
     piatto: dict = {}
     for chiave, valore in deposito.items():
         nome = f"{prefisso}{chiave}"
@@ -183,8 +183,8 @@ def costruisci_tabella(depositi: list[dict]) -> tuple[list[str], list[list]]:
     colonne = [c for c in COLONNE_PREFERITE if c in presenti]
     colonne += sorted(c for c in presenti if c not in COLONNE_PREFERITE)
 
-    # Colonna calcolata: serve a sapere subito su quanti depositi si puo'
-    # davvero mandare una mail, che e' il numero che il vault segnala ignoto.
+    # Computed column: tells us at a glance how many deposits can actually
+    # get an email, which is the number the vault flags as unknown.
     colonne.append("haEmail")
 
     tabella = []
@@ -201,11 +201,12 @@ def costruisci_tabella(depositi: list[dict]) -> tuple[list[str], list[list]]:
 
 
 def costruisci_lista_invio(depositi: list[dict]) -> tuple[list[str], list[list]]:
-    """Un indirizzo per persona, non per deposito.
+    """One address per person, not per deposit.
 
-    Chi ha lasciato tre bagagli in tre cassetti ha generato tre righe con la
-    stessa email: senza dedup riceverebbe tre richieste di recensione. Restano
-    fuori i depositi non ritirati, a cui una recensione non si chiede.
+    Someone who left three bags in three lockers generated three rows with
+    the same email: without dedup they would get three review requests. Not
+    picked-up deposits are left out, since we do not ask for a review on
+    those.
     """
     per_indirizzo: dict[str, dict] = {}
 
@@ -222,7 +223,7 @@ def costruisci_lista_invio(depositi: list[dict]) -> tuple[list[str], list[list]]
         )
         voce["depositi"] += 1
 
-        # Le date sono ISO 8601, quindi l'ordine alfabetico e' anche cronologico.
+        # Dates are ISO 8601, so alphabetical order is also chronological.
         ritiro = str(deposito.get("pickupCompletedAt") or "")
         if ritiro > voce["ultimoRitiro"]:
             voce["ultimoRitiro"] = ritiro
@@ -239,7 +240,7 @@ def costruisci_lista_invio(depositi: list[dict]) -> tuple[list[str], list[list]]
 
 
 # --------------------------------------------------------------------------
-# destinazioni
+# destinations
 # --------------------------------------------------------------------------
 
 def scrivi_csv(percorso: str, colonne: list[str], righe: list[list]) -> None:
@@ -247,11 +248,11 @@ def scrivi_csv(percorso: str, colonne: list[str], righe: list[list]) -> None:
         scrittore = csv.writer(f, delimiter=";")
         scrittore.writerow(colonne)
         scrittore.writerows(righe)
-    print(f"Scritte {len(righe)} righe in {percorso}")
+    print(f"Wrote {len(righe)} rows to {percorso}")
 
 
 def estrai_sheet_id(valore: str) -> str:
-    """Accetta sia l'ID nudo sia l'URL completo copiato dalla barra del browser."""
+    """Accepts either the bare ID or the full URL copied from the browser bar."""
     if "/d/" in valore:
         return valore.split("/d/", 1)[1].split("/", 1)[0].split("?", 1)[0].split("#", 1)[0]
     return valore
@@ -273,7 +274,7 @@ def _scrivi_scheda(foglio, nome_scheda: str, colonne: list[str], righe: list[lis
     scheda.update(values=[intestazione, colonne] + righe, range_name="A1")
     scheda.freeze(rows=2)
 
-    print(f"Scritte {len(righe)} righe nella scheda «{nome_scheda}».")
+    print(f"Wrote {len(righe)} rows to the \"{nome_scheda}\" tab.")
 
 
 def scrivi_google_sheet(
@@ -301,14 +302,14 @@ def scrivi_google_sheet(
         env.get("SHEET_TAB", "Depositi Pisa"),
         colonne,
         righe,
-        f"Aggiornato il {aggiornato} — {len(righe)} depositi",
+        f"Updated on {aggiornato}, {len(righe)} deposits",
     )
     _scrivi_scheda(
         foglio,
         env.get("SHEET_TAB_INVII", "Lista invio"),
         colonne_invio,
         righe_invio,
-        f"Aggiornato il {aggiornato} — {len(righe_invio)} indirizzi distinti, un ritiro a testa",
+        f"Updated on {aggiornato}, {len(righe_invio)} distinct addresses, one pickup each",
     )
 
     print(f"https://docs.google.com/spreadsheets/d/{sheet_id}/edit")
@@ -333,35 +334,35 @@ def riepiloga(depositi: list[dict]) -> None:
             if "@" in email:
                 ritirati_con_email += 1
 
-    print(f"\nDepositi totali: {len(depositi)}")
+    print(f"\nTotal deposits: {len(depositi)}")
     for stato, quanti in sorted(stati.items(), key=lambda x: -x[1]):
         print(f"  {stato}: {quanti}")
 
     quota = (ritirati_con_email / ritirati * 100) if ritirati else 0
-    print(f"\nRitirati con email: {ritirati_con_email} su {ritirati} ({quota:.0f}%)")
-    print(f"Indirizzi distinti: {len(indirizzi)}")
-    print("  ^ e' il bacino reale di richieste di recensione, al netto dei doppioni.")
+    print(f"\nPicked up with email: {ritirati_con_email} of {ritirati} ({quota:.0f}%)")
+    print(f"Distinct addresses: {len(indirizzi)}")
+    print("  ^ this is the real pool for review requests, net of duplicates.")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Export depositi Pisa")
-    parser.add_argument("--schema", action="store_true", help="stampa i campi restituiti dall'API")
-    parser.add_argument("--dry-run", action="store_true", help="scarica e riepiloga senza scrivere")
-    parser.add_argument("--csv", metavar="FILE", help="scrive un CSV invece del Google Sheet")
+    parser = argparse.ArgumentParser(description="Pisa deposits export")
+    parser.add_argument("--schema", action="store_true", help="prints the fields returned by the API")
+    parser.add_argument("--dry-run", action="store_true", help="downloads and summarizes without writing")
+    parser.add_argument("--csv", metavar="FILE", help="writes a CSV instead of the Google Sheet")
     argomenti = parser.parse_args()
 
     env = carica_env()
-    print("Login sul gestionale...", flush=True)
+    print("Logging into the management system...", flush=True)
     token = login(richiedi(env, "PISA_EMAIL"), richiedi(env, "PISA_PASSWORD"))
 
-    print("Scarico i depositi...", flush=True)
+    print("Downloading deposits...", flush=True)
     depositi = scarica_depositi(token, env.get("PISA_HUB_ID") or None)
 
     if not depositi:
-        sys.exit("Nessun deposito restituito dall'API: controlla l'account e l'hub.")
+        sys.exit("No deposits returned by the API: check the account and the hub.")
 
     if argomenti.schema:
-        print("\nCampi del primo deposito (i campi sensibili sono oscurati):\n")
+        print("\nFields of the first deposit (sensitive fields are masked):\n")
         campione = {
             chiave: ("***" if chiave in CAMPI_ESCLUSI else valore)
             for chiave, valore in appiattisci(depositi[0]).items()
@@ -375,9 +376,9 @@ def main() -> None:
     riepiloga(depositi)
 
     if argomenti.dry_run:
-        print(f"\n[dry-run] {len(righe)} righe x {len(colonne)} colonne, non scritte.")
-        print(f"[dry-run] lista invio: {len(righe_invio)} indirizzi, non scritti.")
-        print("Colonne: " + ", ".join(colonne))
+        print(f"\n[dry-run] {len(righe)} rows x {len(colonne)} columns, not written.")
+        print(f"[dry-run] send list: {len(righe_invio)} addresses, not written.")
+        print("Columns: " + ", ".join(colonne))
         return
 
     if argomenti.csv:
