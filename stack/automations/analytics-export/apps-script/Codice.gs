@@ -1,49 +1,51 @@
 /**
- * Archivio di Simple Analytics dentro il Google Sheet, partendo dai CSV.
+ * Simple Analytics archive inside the Google Sheet, built from the CSVs.
  *
- * Gira su Apps Script, cioe' sui server di Google. Ogni notte guarda in una
- * cartella di Drive, prende i CSV che ci trova, li accumula nel foglio e
- * sposta i file gia' digeriti in una sottocartella.
+ * Runs on Apps Script, that is on Google's servers. Every night it looks in a
+ * Drive folder, takes the CSVs it finds there, piles them up in the sheet and
+ * moves the files it has already digested into a subfolder.
  *
- * PERCHE' DAI CSV E NON DALL'API. L'Export API di Simple Analytics vuole una
- * coppia sa_api_key_ / sa_user_id_ che il piano gratuito non da'. La URL che
- * la dashboard mostra nel browser funziona solo li', perche' si porta dietro
- * il cookie di sessione: chiamata da fuori risponde «No permission to access
- * data». Verificato il 19/08/2026.
+ * WHY FROM THE CSVS AND NOT FROM THE API. The Simple Analytics Export API
+ * wants an sa_api_key_ / sa_user_id_ pair that the free plan does not give.
+ * The URL the dashboard shows in the browser works only there, because it
+ * carries the session cookie with it: called from outside it answers "No
+ * permission to access data". Checked on 19 August 2026.
  *
- * Quindi il download resta a mano, ed e' l'unico pezzo a mano: scaricare il
- * CSV e lasciarlo cadere nella cartella. Tutto il resto succede da solo.
+ * So the download stays manual, and it is the only manual piece: download the
+ * CSV and drop it into the folder. Everything else happens on its own.
  *
- * PERCHE' SERVE. Il piano gratuito di Simple Analytics conserva 30 GIORNI e
- * poi cancella. Il foglio non e' uno specchio della dashboard: e' l'archivio,
- * ed e' l'unico posto dove i dati piu' vecchi di un mese continuano a
- * esistere. Per questo lo script non cancella mai righe che non stia
- * riscrivendo con dati appena arrivati.
+ * WHY IT IS NEEDED. The Simple Analytics free plan keeps 30 DAYS and then
+ * deletes. The sheet is not a mirror of the dashboard: it is the archive,
+ * and it is the only place where data older than a month keeps on
+ * existing. That is why the script never deletes rows it is not
+ * rewriting with data that has just arrived.
  *
- * COSA FA A OGNI CORSA
- *   1. cerca i file CSV nella cartella d'ingresso
- *   2. per ognuno, legge quali GIORNI contiene
- *   3. riscrive quei giorni nelle schede, lasciando intatto tutto il resto
- *   4. ricalcola gli aggregati di quei giorni dai grezzi
- *   5. sposta il file in «importati», cosi' non viene riletto
+ * WHAT IT DOES ON EVERY RUN
+ *   1. looks for the CSV files in the inbox folder
+ *   2. for each one, reads which DAYS it contains
+ *   3. rewrites those days in the sheets, leaving everything else untouched
+ *   4. recomputes the aggregates for those days from the raw rows
+ *   5. moves the file into "importati", so it does not get read again
  *
- * Caricare due volte lo stesso file non duplica niente. Caricare periodi che
- * si sovrappongono nemmeno: vince sempre il file arrivato per ultimo, che e'
- * anche il piu' assestato.
+ * Loading the same file twice duplicates nothing. Loading periods that
+ * overlap does not either: the file that arrived last always wins, and it is
+ * also the most settled one.
  *
- * CONFIGURAZIONE, nelle Proprieta' script (Impostazioni progetto):
- *   SA_CARTELLA   facoltativa, nome della cartella su Drive.
- *                 Default «Simple Analytics export».
- * Nessuna credenziale: non ce n'e' bisogno e non ne va messa nessuna.
+ * CONFIGURATION, in the Script Properties (Project Settings):
+ *   SA_CARTELLA   optional, name of the folder on Drive.
+ *                 Default "Simple Analytics export".
+ * No credentials: none are needed and none should be put in.
  */
 
 var CARTELLA_DEFAULT = 'Simple Analytics export';
+// "importati" is the Drive subfolder the digested files are moved into: the
+// name has to match the folder, so it stays in Italian.
 var SOTTOCARTELLA_FATTI = 'importati';
 var FUSO = 'Europe/Rome';
 
-// Le colonne della scheda dei grezzi. Il CSV puo' averne di piu' o di meno e
-// in qualsiasi ordine: si mappa per NOME leggendo l'intestazione del file, e
-// quelle che mancano restano vuote invece di far saltare l'importazione.
+// The columns of the raw sheet. The CSV can carry more of them or fewer and
+// in any order: they are mapped by NAME reading the file header, and the ones
+// that are missing stay empty instead of breaking the import.
 var CAMPI = [
   'added_date', 'added_iso', 'datapoint', 'path', 'query',
   'document_referrer', 'referrer_hostname', 'utm_source', 'utm_medium',
@@ -52,21 +54,24 @@ var CAMPI = [
   'scrolled_percentage', 'uuid'
 ];
 
+// Sheet tab names, kept as they are: they have to match the tabs in the Sheet.
 var TAB_GREZZI = 'SA Grezzi';
 var TAB_LOG = 'SA Log';
 
+// The "nome" values are tab names and stay as they are; "titolo" is the
+// header cell written at the top of the second column.
 var AGGREGATI = [
   { nome: 'SA Totali',   etichetta: null,                titolo: null },
-  { nome: 'SA Pagine',   etichetta: 'path',              titolo: 'pagina' },
+  { nome: 'SA Pagine',   etichetta: 'path',              titolo: 'page' },
   { nome: 'SA Referrer', etichetta: 'referrer_hostname', titolo: 'referrer' },
   { nome: 'SA UTM',      etichetta: 'utm_source',        titolo: 'utm_source' }
 ];
 
 // ---------------------------------------------------------------------------
-// I comandi che si usano
+// The commands you use
 // ---------------------------------------------------------------------------
 
-/** Il punto di ingresso del trigger notturno. */
+/** The entry point of the nightly trigger. */
 function importaNuoviCsv() {
   var cartella = trovaCartella_();
   var file = cartella.getFilesByType(MimeType.CSV);
@@ -74,8 +79,8 @@ function importaNuoviCsv() {
   var elenco = [];
   while (file.hasNext()) elenco.push(file.next());
 
-  // Anche i CSV che Drive non riconosce come tali (capita quando il browser
-  // li salva come text/plain) vanno presi, altrimenti restano li' per sempre.
+  // The CSVs Drive does not recognise as such (it happens when the browser
+  // saves them as text/plain) have to be taken too, or they sit there forever.
   var altri = cartella.getFilesByType(MimeType.PLAIN_TEXT);
   while (altri.hasNext()) {
     var f = altri.next();
@@ -83,12 +88,12 @@ function importaNuoviCsv() {
   }
 
   if (!elenco.length) {
-    scriviLog_('importa', 0, 'nessun file nuovo nella cartella «' + cartella.getName() + '»');
+    scriviLog_('import', 0, 'no new file in the folder "' + cartella.getName() + '"');
     return;
   }
 
-  // Dal piu' vecchio al piu' recente: se due file coprono lo stesso giorno,
-  // deve restare quello caricato per ultimo.
+  // Oldest to newest: if two files cover the same day, the one loaded last
+  // has to be the one that stays.
   elenco.sort(function (a, b) { return a.getDateCreated() - b.getDateCreated(); });
 
   var fatti = 0, righeTotali = 0, problemi = [];
@@ -98,25 +103,26 @@ function importaNuoviCsv() {
       archivia_(elenco[i], cartella);
       fatti++;
     } catch (e) {
-      // Un file rotto non deve bloccare gli altri, e non va archiviato:
-      // resta nella cartella cosi' lo si ritrova e lo si guarda.
+      // A broken file must not block the others, and must not be archived:
+      // it stays in the folder so it can be found again and looked at.
       problemi.push(elenco[i].getName() + ' (' + e.message + ')');
     }
   }
 
-  var esito = fatti + ' file importati, ' + righeTotali + ' righe';
-  if (problemi.length) esito += '; NON riusciti: ' + problemi.join(', ');
-  scriviLog_('importa', fatti, esito);
+  var esito = fatti + ' files imported, ' + righeTotali + ' rows';
+  if (problemi.length) esito += '; FAILED: ' + problemi.join(', ');
+  scriviLog_('import', fatti, esito);
 }
 
 /**
- * Legge il primo CSV della cartella e dice cosa contiene, senza scrivere
- * niente nel foglio e senza spostare il file. E' la prova da fare per prima.
+ * Reads the first CSV in the folder and says what it contains, without
+ * writing anything in the sheet and without moving the file. It is the check
+ * to run first.
  */
 function provaPrimoFile() {
   var cartella = trovaCartella_();
   var file = cartella.getFiles();
-  if (!file.hasNext()) return 'La cartella «' + cartella.getName() + '» e\' vuota.';
+  if (!file.hasNext()) return 'The folder "' + cartella.getName() + '" is empty.';
 
   var f = file.next();
   var letto = leggiCsv_(f);
@@ -124,24 +130,24 @@ function provaPrimoFile() {
   var tipi = {};
   for (var i = 0; i < letto.righe.length; i++) {
     giorni[letto.righe[i].added_date] = (giorni[letto.righe[i].added_date] || 0) + 1;
-    var t = letto.righe[i].datapoint || '(vuoto)';
+    var t = letto.righe[i].datapoint || '(empty)';
     tipi[t] = (tipi[t] || 0) + 1;
   }
 
   var out = [];
   out.push('File: ' + f.getName());
-  out.push('Righe valide: ' + letto.righe.length);
-  out.push('Colonne trovate: ' + letto.intestazioni.join(', '));
+  out.push('Valid rows: ' + letto.righe.length);
+  out.push('Columns found: ' + letto.intestazioni.join(', '));
   var mancanti = [];
   for (var c = 0; c < CAMPI.length; c++) {
     if (letto.intestazioni.indexOf(CAMPI[c]) < 0) mancanti.push(CAMPI[c]);
   }
-  out.push('Colonne attese che mancano: ' + (mancanti.length ? mancanti.join(', ') : 'nessuna'));
+  out.push('Expected columns missing: ' + (mancanti.length ? mancanti.join(', ') : 'none'));
   out.push('');
-  out.push('Valori della colonna «datapoint»:');
+  out.push('Values of the "datapoint" column:');
   for (var t2 in tipi) out.push('   ' + t2 + ': ' + tipi[t2]);
   out.push('');
-  out.push('Giorni coperti:');
+  out.push('Days covered:');
   var chiavi = Object.keys(giorni).sort();
   for (var g = 0; g < chiavi.length; g++) out.push('   ' + chiavi[g] + ': ' + giorni[chiavi[g]]);
 
@@ -150,7 +156,7 @@ function provaPrimoFile() {
   return testo;
 }
 
-/** Installa il trigger notturno. Lanciarlo due volte non lo sdoppia. */
+/** Installs the nightly trigger. Running it twice does not double it. */
 function installaTriggerGiornaliero() {
   var esistenti = ScriptApp.getProjectTriggers();
   for (var i = 0; i < esistenti.length; i++) {
@@ -160,18 +166,18 @@ function installaTriggerGiornaliero() {
   }
   ScriptApp.newTrigger('importaNuoviCsv')
            .timeBased().atHour(5).everyDays(1).inTimezone(FUSO).create();
-  Logger.log('Trigger installato: ogni notte fra le 5 e le 6.');
+  Logger.log('Trigger installed: every night between 5 and 6.');
 }
 
 // ---------------------------------------------------------------------------
-// Il lavoro
+// The work
 // ---------------------------------------------------------------------------
 
 function importaFile_(file) {
   var letto = leggiCsv_(file);
-  if (!letto.righe.length) throw new Error('nessuna riga con una data leggibile');
+  if (!letto.righe.length) throw new Error('no row with a readable date');
 
-  // I giorni da riscrivere sono quelli che il file contiene, e solo quelli.
+  // The days to rewrite are the ones the file contains, and only those.
   var toccate = {};
   for (var i = 0; i < letto.righe.length; i++) toccate[letto.righe[i].added_date] = true;
 
@@ -181,11 +187,11 @@ function importaFile_(file) {
 }
 
 /**
- * Legge il CSV e lo mappa sui campi attesi, per nome di colonna.
+ * Reads the CSV and maps it onto the expected fields, by column name.
  *
- * La data del giorno viene da «added_date» se c'e', altrimenti dai primi
- * dieci caratteri di «added_iso»: cosi' il file va bene comunque, anche se
- * l'export e' stato fatto con una scelta di campi diversa.
+ * The day comes from "added_date" if it is there, otherwise from the first
+ * ten characters of "added_iso": that way the file works anyway, even if the
+ * export was made with a different choice of fields.
  */
 function leggiCsv_(file) {
   var testo = file.getBlob().getDataAsString('UTF-8');
@@ -212,8 +218,8 @@ function leggiCsv_(file) {
     if (!riga.added_date && riga.added_iso) {
       riga.added_date = riga.added_iso.slice(0, 10);
     }
-    // Una riga senza data non e' collocabile nell'archivio: si scarta invece
-    // di finire in fondo al foglio con la chiave vuota.
+    // A row without a date has no place in the archive: it gets dropped
+    // instead of landing at the bottom of the sheet with an empty key.
     if (!/^\d{4}-\d{2}-\d{2}$/.test(riga.added_date)) continue;
 
     righe.push(riga);
@@ -233,12 +239,11 @@ function scriviGrezzi_(righe, toccate) {
 }
 
 /**
- * Ricalcola le quattro schede per giorno a partire dai grezzi.
+ * Recomputes the four sheets day by day starting from the raw rows.
  *
- * «visitors» e' il conteggio delle righe marcate is_unique, che e' come Simple
- * Analytics stessa definisce il visitatore: la prima pagina vista in una
- * sessione. Non e' una persona seguita nel tempo, e senza cookie non puo'
- * esserlo.
+ * "visitors" is the count of the rows marked is_unique, which is how Simple
+ * Analytics itself defines a visitor: the first page seen in a session. It is
+ * not a person followed over time, and without cookies it cannot be.
  */
 function scriviAggregati_(righe, toccate) {
   for (var a = 0; a < AGGREGATI.length; a++) {
@@ -250,7 +255,7 @@ function scriviAggregati_(righe, toccate) {
       if (!toccate[riga.added_date]) continue;
       if (!eUnaPagina_(riga)) continue;
 
-      var etichetta = agg.etichetta ? (riga[agg.etichetta] || '(nessuno)') : '';
+      var etichetta = agg.etichetta ? (riga[agg.etichetta] || '(none)') : '';
       var chiave = riga.added_date + ' ' + etichetta;
       if (!conti[chiave]) {
         conti[chiave] = { data: riga.added_date, etichetta: etichetta, pv: 0, vis: 0 };
@@ -265,9 +270,9 @@ function scriviAggregati_(righe, toccate) {
       valori.push(agg.etichetta ? [c.data, c.etichetta, c.pv, c.vis] : [c.data, c.pv, c.vis]);
     }
 
-    // I giorni coperti dal file ma senza nessuna pagina vista vanno scritti a
-    // zero nella scheda dei totali: e' quella riga a dire «questo giorno c'e'
-    // gia' stato guardato», e distingue un giorno vuoto da un giorno mancante.
+    // The days the file covers but with no pageview at all have to be written
+    // as zero in the totals sheet: it is that row that says "this day has
+    // been looked at already", and it tells an empty day from a missing one.
     if (!agg.etichetta) {
       var visti = {};
       for (var v = 0; v < valori.length; v++) visti[valori[v][0]] = true;
@@ -275,18 +280,18 @@ function scriviAggregati_(righe, toccate) {
     }
 
     var colonne = agg.etichetta
-      ? ['data', agg.titolo, 'pageviews', 'visitors']
-      : ['data', 'pageviews', 'visitors'];
+      ? ['date', agg.titolo, 'pageviews', 'visitors']
+      : ['date', 'pageviews', 'visitors'];
     riversa_({ nome: agg.nome, colonne: colonne }, valori, toccate);
   }
 }
 
 /**
- * Distingue una pagina vista da un evento. L'export porta tutti e due quando
- * si chiede «type=all», e la colonna «datapoint» dice quale sia. Il valore
- * esatto usato per le pagine si vede con provaPrimoFile() sui dati veri: qui
- * si accetta sia «pageview» sia la casella vuota, cosi' il conteggio regge in
- * entrambi i casi invece di azzerarsi in silenzio.
+ * Tells a pageview from an event. The export brings both when you ask for
+ * "type=all", and the "datapoint" column says which is which. The exact value
+ * used for pages shows up by running provaPrimoFile() on the real data: here
+ * both "pageview" and the empty cell are accepted, so the count holds in
+ * either case instead of going to zero in silence.
  */
 function eUnaPagina_(riga) {
   var d = String(riga.datapoint === undefined ? '' : riga.datapoint).toLowerCase();
@@ -294,14 +299,14 @@ function eUnaPagina_(riga) {
 }
 
 /**
- * Toglie dalla scheda le righe dei giorni contenuti nel file, ci rimette
- * quelle nuove e riscrive in ordine di data. Le righe dei giorni non toccati
- * non vengono mai riscritte ne' cancellate.
+ * Takes out of the sheet the rows of the days contained in the file, puts the
+ * new ones in their place and rewrites them in date order. The rows of the
+ * days not touched are never rewritten nor deleted.
  *
- * Riscrive solo la CODA del foglio, dalla prima riga con data maggiore o
- * uguale al giorno piu' vecchio toccato: cosi' lo storico vecchio non viene
- * nemmeno riletto, ed e' quello che tiene la corsa corta quando la scheda dei
- * grezzi sara' arrivata a decine di migliaia di righe.
+ * It rewrites only the TAIL of the sheet, from the first row with a date
+ * greater than or equal to the oldest day touched: that way the old history
+ * is not even read again, and that is what keeps the run short once the raw
+ * sheet has reached tens of thousands of rows.
  */
 function riversa_(scheda, righeNuove, dateToccate) {
   var foglio = prendiScheda_(scheda);
@@ -354,13 +359,13 @@ function trovaCartella_() {
              || CARTELLA_DEFAULT;
   var trovate = DriveApp.getFoldersByName(nome);
   if (!trovate.hasNext()) {
-    throw new Error('Cartella «' + nome + '» non trovata su Drive. ' +
-                    'Creala, oppure cambia la proprieta\' SA_CARTELLA.');
+    throw new Error('Folder "' + nome + '" not found on Drive. ' +
+                    'Create it, or change the SA_CARTELLA property.');
   }
   return trovate.next();
 }
 
-/** Sposta il file in «importati», cosi' la corsa dopo non lo rilegge. */
+/** Moves the file into "importati", so the next run does not read it again. */
 function archivia_(file, cartella) {
   var sotto = cartella.getFoldersByName(SOTTOCARTELLA_FATTI);
   var destinazione = sotto.hasNext() ? sotto.next()
@@ -370,13 +375,13 @@ function archivia_(file, cartella) {
 }
 
 // ---------------------------------------------------------------------------
-// Minuteria
+// Odds and ends
 // ---------------------------------------------------------------------------
 
 /**
- * Trova la scheda o la crea con le intestazioni giuste. Le prime due colonne
- * sono formattate come testo: senza, il foglio trasforma «2026-08-19» in una
- * data e le chiavi non combaciano piu' alla corsa dopo.
+ * Finds the sheet or creates it with the right headers. The first two columns
+ * are formatted as text: without that, the sheet turns "2026-08-19" into a
+ * date and the keys stop matching on the next run.
  */
 function prendiScheda_(scheda) {
   var libro = SpreadsheetApp.getActiveSpreadsheet();
@@ -402,7 +407,7 @@ function scriviLog_(etichetta, quanti, esito) {
   if (!foglio) {
     foglio = libro.insertSheet(TAB_LOG);
     foglio.getRange(1, 1, 1, 4)
-          .setValues([['quando', 'comando', 'file', 'esito']]).setFontWeight('bold');
+          .setValues([['when', 'command', 'file', 'outcome']]).setFontWeight('bold');
     foglio.setFrozenRows(1);
   }
   foglio.appendRow([
