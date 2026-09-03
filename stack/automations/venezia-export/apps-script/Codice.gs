@@ -1,47 +1,48 @@
 /**
- * Export degli incassi di Venezia dentro il Google Sheet, senza PC acceso.
+ * Export of the Venice takings into the Google Sheet, with no PC left running.
  *
- * Gira su Apps Script, cioe' sui server di Google: entra nel pannello PromoTec
- * (panel.kiosk-vendor.example), apre la pagina Counters, scarica i mesi disponibili e li
- * accumula nella scheda «Incassi Venezia» del foglio a cui e' agganciato.
+ * Runs on Apps Script, that is on Google's servers: it logs into the PromoTec
+ * panel (panel.kiosk-vendor.example), opens the Counters page, downloads the
+ * available months and piles them into the "Incassi Venezia" tab of the sheet
+ * it is attached to.
  *
- * DIFFERENZA CHE CONTA RISPETTO A PISA. Lo script di Pisa riscrive il foglio
- * per intero a ogni corsa, perche' l'API del gestionale conserva tutto lo
- * storico. Qui no: il pannello di Venezia tiene SOLO TRE MESI, quindi il
- * foglio e' l'archivio e non uno specchio. Questo script non cancella MAI
- * righe gia' presenti: legge quelle che ci sono, ci sovrascrive i mesi appena
- * scaricati indicizzando per numero di scontrino, e riscrive l'unione. Un mese
- * uscito dalla finestra dei tre resta nel foglio per sempre.
+ * THE DIFFERENCE THAT MATTERS AGAINST PISA. The Pisa script rewrites the sheet
+ * in full on every run, because the management API keeps the whole history.
+ * Not here: the Venice panel keeps ONLY THREE MONTHS, so the sheet is the
+ * archive and not a mirror. This script NEVER deletes rows that are already
+ * there: it reads the ones it finds, overwrites them with the months just
+ * downloaded, indexing by receipt number, and writes back the union. A month
+ * that falls out of the three-month window stays in the sheet forever.
  *
- * IL PANNELLO E' UN TELECOMANDO, NON UN GESTIONALE DI SOLA LETTURA. Accanto ai
- * bottoni che servono a leggere ce ne sono altri che agiscono sull'hardware di
- * Cannaregio: «Unbook All» libera tutte le prenotazioni, «Reboot sysytem»
- * riavvia l'impianto, «Open Ex.Door» apre la porta esterna, e i 56 bottoni
- * «Locker100»-«Locker155» aprono un cassetto ciascuno. Nel browser quei
- * bottoni chiedono conferma, ma la conferma e' JavaScript: un client HTTP la
- * scavalca senza accorgersene, quindi qui quella protezione non esiste.
+ * THE PANEL IS A REMOTE CONTROL, NOT A READ-ONLY MANAGEMENT TOOL. Next to the
+ * buttons you use to read there are others that act on the hardware in
+ * Cannaregio: "Unbook All" releases every booking, "Reboot sysytem" restarts
+ * the installation, "Open Ex.Door" opens the outer door, and the 56 buttons
+ * "Locker100"-"Locker155" each open one locker. In the browser those buttons
+ * ask for confirmation, but the confirmation is JavaScript: an HTTP client
+ * steps over it without noticing, so here that protection does not exist.
  *
- * Per questo lo script ragiona per LISTA DI CIO' CHE E' CONSENTITO, non per
- * lista di cio' che e' vietato: puo' premere soltanto i quattro bottoni
- * elencati in BOTTONI_CONSENTITI, e controllaDati_() rifiuta qualunque altro
- * nome di bottone finisca nel payload. Una lista di divieti avrebbe il difetto
- * di non riconoscere un bottone pericoloso rinominato dal fornitore.
+ * That is why the script works from a LIST OF WHAT IS ALLOWED, not from a list
+ * of what is forbidden: it can press only the four buttons listed in
+ * BOTTONI_CONSENTITI, and controllaDati_() refuses any other button name that
+ * ends up in the payload. A list of prohibitions would have the flaw of not
+ * recognising a dangerous button the vendor has renamed.
  *
- * LE PAGINE SI SERVONO IN DUE TEMPI. La prima risposta del server e' uno
- * scheletro senza dati: la tendina dei mesi arriva vuota e i bottoni dei
- * cassetti non ci sono. In fondo alla pagina c'e' uno <script> con
- * __doPostBack('__Page','PBArg') che il browser esegue subito, ed e' quel
- * secondo postback a riempire tutto. Ci pensa Sessione_.posta(). Senza, si
- * vede una pagina vuota e si crede che il pannello sia cambiato: e' costato
- * una sessione, il 18/08/2026.
+ * THE PAGES ARE SERVED IN TWO STEPS. The server's first response is a skeleton
+ * with no data: the month dropdown comes back empty and the locker buttons are
+ * not there. At the bottom of the page there is a <script> with
+ * __doPostBack('__Page','PBArg') that the browser runs straight away, and it is
+ * that second postback that fills everything in. Sessione_.posta() takes care
+ * of it. Without it you see an empty page and conclude the panel has changed:
+ * that cost a session, on 18/08/2026.
  *
- * Le credenziali NON stanno qui dentro: stanno nelle Proprieta' script del
- * progetto (Impostazioni progetto -> Proprieta' script).
- *   VENEZIA_USER      obbligatoria, lo User Name della prima schermata
- *   VENEZIA_PASSWORD  obbligatoria, la System password della seconda
- *   VENEZIA_SISTEMA   facoltativa, default «Luggage Cannaregio Dyn»
+ * The credentials are NOT in here: they live in the project's Script
+ * properties (Project settings -> Script properties).
+ *   VENEZIA_USER      required, the User Name from the first screen
+ *   VENEZIA_PASSWORD  required, the System password from the second
+ *   VENEZIA_SISTEMA   optional, defaults to "Luggage Cannaregio Dyn"
  *
- * Gemello Python, che fa lo stesso lavoro sul PC e accumula in un CSV:
+ * Python twin, which does the same job on the PC and piles into a CSV:
  * C:\path\to\automations\venezia-export\export_incassi.py
  */
 
@@ -53,62 +54,62 @@ var UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
 var TAB_INCASSI = 'Incassi Venezia';
 var SISTEMA_DEFAULT = 'Luggage Cannaregio Dyn';
 
-// Le stesse colonne del CSV prodotto dal gemello Python, nello stesso ordine,
-// cosi' i due archivi restano confrontabili riga per riga.
+// The same columns as the CSV produced by the Python twin, in the same order,
+// so the two archives stay comparable row by row.
 var COLONNE = ['mese', 'data', 'importoIvaInclusa', 'cassetto', 'scontrino', 'sconto'];
 
-// La colonna su cui si deduplica: il pannello non riusa mai un numero di
-// scontrino, quindi rileggere un mese due volte non crea doppioni.
+// The column used for deduplication: the panel never reuses a receipt number,
+// so reading a month twice creates no duplicates.
 var COL_SCONTRINO = 4;
 
-// Formato di ogni colonna. «@» vuol dire testo: serve perche' altrimenti il
-// foglio interpreta «08/2026» come una data e «2026-06-01 09:31:56» come un
-// timestamp, e l'archivio smette di somigliare a quello che il pannello ha
-// davvero mandato. Importo e sconto restano numeri, cosi' si sommano.
+// Format of each column. "@" means text: it is needed because otherwise the
+// sheet reads "08/2026" as a date and "2026-06-01 09:31:56" as a timestamp,
+// and the archive stops looking like what the panel actually sent. Amount and
+// discount stay numbers, so they add up.
 var FORMATI = ['@', '@', '0.00', '@', '@', '0.00'];
 
-// I SOLI bottoni che questo script puo' premere. Tutto il resto viene
-// rifiutato da controllaDati_(), compreso cio' che oggi non esiste.
+// The ONLY buttons this script may press. Everything else is refused by
+// controllaDati_(), including what does not exist today.
 var BOTTONI_CONSENTITI = [
-  /^btnSelecUser$/i,          // «Select», conferma lo User Name
-  /^btnSelectSystem_\d+$/i,   // sceglie l'impianto
-  /^BtnCounters$/i,           // apre la pagina Counters
-  /^BtnGetCounterRecords$/i   // «Get Incoming», scarica il mese
+  /^btnSelecUser$/i,          // "Select", confirms the User Name
+  /^btnSelectSystem_\d+$/i,   // picks the installation
+  /^BtnCounters$/i,           // opens the Counters page
+  /^BtnGetCounterRecords$/i   // "Get Incoming", downloads the month
 ];
 
-// Non globale di proposito: una regexp con /g si porta dietro lastIndex fra
-// una .test() e l'altra e comincia a dare risposte alternate.
+// Deliberately not global: a regexp with /g carries lastIndex from one .test()
+// to the next and starts giving alternating answers.
 var AUTO_POSTBACK = /__doPostBack\(\s*'__Page'\s*,\s*'PBArg'\s*\)/;
 
-// IL PANNELLO VA IN LETARGO. kiosk-vendor.example spegne l'applicazione dopo un periodo
-// di inattivita' e la riavvia alla prima richiesta: chi bussa mentre si sta
-// svegliando resta appeso e va in timeout. Misurato il 2026-08-19, sei
-// chiamate di fila da freddo: timeout a 25s, poi 12,3s, 7,8s, 2,7s, 3,8s,
-// 0,5s. Da qui la sveglia e i tentativi qui sotto.
-var SVEGLIE = 4;          // chiamate a vuoto per far ripartire l'applicazione
+// THE PANEL HIBERNATES. kiosk-vendor.example shuts the application down after a
+// spell of inactivity and restarts it on the first request: whoever knocks
+// while it is waking up hangs and times out. Measured on 2026-08-19, six calls
+// in a row from cold: timeout at 25s, then 12.3s, 7.8s, 2.7s, 3.8s, 0.5s. Hence
+// the wake-up calls and the retries below.
+var SVEGLIE = 4;          // throwaway calls to get the application going again
 var PAUSA_SVEGLIA = 10000;
-var TENTATIVI = 2;        // corse complete, se la prima cade in timeout
+var TENTATIVI = 2;        // full runs, if the first one times out
 var PAUSA_TENTATIVO = 15000;
 
 
 // ---------------------------------------------------------------------------
-// il comando
+// the command
 // ---------------------------------------------------------------------------
 
 /**
- * La funzione da lanciare, a mano dal menu «Nutrie» o da un attivatore.
+ * The function to launch, by hand from the "Nutrie" menu or from a trigger.
  *
- * L'attivatore non si crea da qui: si imposta a mano dall'editor, pannello
- * Attivatori, su questa funzione. Una volta al mese basta, ma una volta al
- * giorno non fa danno e mette al riparo da un mese saltato.
+ * The trigger is not created here: you set it by hand from the editor, Triggers
+ * panel, on this function. Once a month is enough, but once a day does no harm
+ * and protects you from a missed month.
  */
 function aggiornaIncassi() {
-  // Due esecuzioni sovrapposte riscriverebbero la scheda insieme e potrebbero
-  // lasciarla a meta'. Capita facilmente con un attivatore giornaliero e una
-  // corsa lanciata a mano nello stesso momento.
+  // Two overlapping runs would rewrite the tab together and could leave it half
+  // done. That happens easily with a daily trigger and a run launched by hand
+  // at the same moment.
   var lucchetto = LockService.getScriptLock();
   if (!lucchetto.tryLock(30000)) {
-    throw new Error('Un\'altra corsa e\' gia\' in esecuzione. Riprova fra qualche minuto.');
+    throw new Error('Another run is already in progress. Try again in a few minutes.');
   }
 
   try {
@@ -119,11 +120,11 @@ function aggiornaIncassi() {
         eseguiAggiornamento_();
         return;
       } catch (errore) {
-        // Si riparte da capo solo per i timeout, che sono il letargo del
-        // pannello. Un errore di merito — credenziali sbagliate, pannello
-        // cambiato — va mostrato subito, non ritentato.
+        // We start over only for timeouts, which are the panel hibernating. A
+        // substantive error, wrong credentials, a changed panel, has to be
+        // shown at once, not retried.
         if (!eTimeout_(errore) || tentativo === TENTATIVI) throw errore;
-        Logger.log('Tentativo ' + tentativo + ' caduto in timeout, ricomincio da capo.');
+        Logger.log('Attempt ' + tentativo + ' timed out, starting over.');
         Utilities.sleep(PAUSA_TENTATIVO);
       }
     }
@@ -134,12 +135,12 @@ function aggiornaIncassi() {
 
 
 /**
- * Bussa al pannello finche' non risponde, prima di cominciare sul serio.
+ * Knocks at the panel until it answers, before starting for real.
  *
- * Sono chiamate buttate via: non servono i dati e non serve la sessione, che
- * la corsa vera si apre da sola. Servono solo a far riavviare l'applicazione
- * mentre nessuno dipende ancora dal risultato. Se falliscono tutte si prova
- * lo stesso: magari e' lenta ma viva.
+ * These are throwaway calls: the data is not needed and neither is the session,
+ * since the real run opens its own. They only serve to restart the application
+ * while nobody depends on the result yet. If they all fail we try anyway: it
+ * may be slow but alive.
  */
 function svegliaPannello_() {
   for (var i = 1; i <= SVEGLIE; i++) {
@@ -151,31 +152,31 @@ function svegliaPannello_() {
         muteHttpExceptions: true
       });
       if (risposta.getResponseCode() === 200) {
-        Logger.log('Pannello sveglio alla chiamata ' + i + '.');
+        Logger.log('Panel awake at call ' + i + '.');
         return;
       }
-      Logger.log('Sveglia ' + i + ': il pannello ha risposto ' + risposta.getResponseCode() + '.');
+      Logger.log('Wake-up ' + i + ': the panel responded ' + risposta.getResponseCode() + '.');
     } catch (errore) {
-      Logger.log('Sveglia ' + i + ': ' + errore.message);
+      Logger.log('Wake-up ' + i + ': ' + errore.message);
     }
     Utilities.sleep(PAUSA_SVEGLIA);
   }
-  Logger.log('Il pannello non ha risposto alle chiamate di sveglia: provo lo stesso.');
+  Logger.log('The panel did not answer the wake-up calls: trying anyway.');
 }
 
 
 /**
- * Se un errore e' il pannello che non risponde, e non un errore di merito.
+ * Whether an error is the panel not answering, rather than a substantive error.
  *
- * Si guarda il testo perche' UrlFetchApp non alza tipi distinti: il timeout
- * arriva come Exception con dentro «Timeout: https://panel.kiosk-vendor.example/».
+ * We look at the text because UrlFetchApp does not raise distinct types: the
+ * timeout arrives as an Exception carrying "Timeout: https://panel.kiosk-vendor.example/".
  */
 function eTimeout_(errore) {
   var testo = String(errore && errore.message ? errore.message : errore).toLowerCase();
   return testo.indexOf('timeout') !== -1 ||
          testo.indexOf('address unavailable') !== -1 ||
          testo.indexOf('dns error') !== -1 ||
-         testo.indexOf('ha risposto 5') !== -1;  // il 500 di kiosk-vendor sotto sforzo
+         testo.indexOf('responded 5') !== -1;  // the kiosk-vendor 500 under load
 }
 
 
@@ -187,8 +188,8 @@ function eseguiAggiornamento_() {
 
   if (!utente || !password) {
     throw new Error(
-      'Mancano VENEZIA_USER o VENEZIA_PASSWORD nelle Proprieta\' script ' +
-      '(Impostazioni progetto -> Proprieta\' script).'
+      'VENEZIA_USER or VENEZIA_PASSWORD is missing from the Script properties ' +
+      '(Project settings -> Script properties).'
     );
   }
 
@@ -199,11 +200,11 @@ function eseguiAggiornamento_() {
   var mesi = pagina.opzioni('monthList');
   if (!mesi.length) {
     throw new Error(
-      'La pagina Counters non espone la lista dei mesi. Se l\'auto-postback ' +
-      '__Page/PBArg non basta piu\', il pannello e\' cambiato.'
+      'The Counters page does not expose the month list. If the __Page/PBArg ' +
+      'auto-postback is no longer enough, the panel has changed.'
     );
   }
-  Logger.log('Mesi disponibili sul pannello: ' + mesi.join(', '));
+  Logger.log('Months available on the panel: ' + mesi.join(', '));
 
   var foglio = SpreadsheetApp.getActiveSpreadsheet();
   var archivio = leggiArchivio_(foglio.getSheetByName(TAB_INCASSI));
@@ -220,7 +221,7 @@ function eseguiAggiornamento_() {
       archivio[String(riga[COL_SCONTRINO])] = riga;
       totale += Number(riga[2]) || 0;
     }
-    riepilogo.push(mesi[i] + ': ' + esito.righe.length + ' transazioni, ' + totale.toFixed(2) + ' EUR');
+    riepilogo.push(mesi[i] + ': ' + esito.righe.length + ' transactions, ' + totale.toFixed(2) + ' EUR');
     Logger.log('  ' + riepilogo[riepilogo.length - 1]);
   }
 
@@ -228,49 +229,49 @@ function eseguiAggiornamento_() {
   var incasso = 0;
   for (var k = 0; k < righe.length; k++) incasso += Number(righe[k][2]) || 0;
 
-  var nota = 'Archivio incassi Venezia (pannello PromoTec). Aggiornato il ' +
+  var nota = 'Venice takings archive (PromoTec panel). Updated on ' +
     Utilities.formatDate(new Date(), FUSO, 'yyyy-MM-dd HH:mm') + '. ' +
-    righe.length + ' transazioni, ' + incasso.toFixed(2) + ' EUR. ' +
-    'Nuove in questa corsa: ' + (righe.length - prima) + '. ' +
-    'Il pannello tiene solo tre mesi: questo foglio e\' l\'archivio, non uno specchio. ' +
-    'Non cancellare ne\' riordinare righe a mano.';
+    righe.length + ' transactions, ' + incasso.toFixed(2) + ' EUR. ' +
+    'New in this run: ' + (righe.length - prima) + '. ' +
+    'The panel keeps only three months: this sheet is the archive, not a mirror. ' +
+    'Do not delete or reorder rows by hand.';
 
   scriviScheda_(foglio, TAB_INCASSI, COLONNE, righe, nota);
 
-  var messaggio = riepilogo.join('  |  ') + '  ->  nuove: ' + (righe.length - prima);
+  var messaggio = riepilogo.join('  |  ') + '  ->  new: ' + (righe.length - prima);
   Logger.log(messaggio);
   try {
     foglio.toast(messaggio, 'Incassi Venezia', 10);
   } catch (e) {
-    // Da un attivatore non c'e' nessuno a guardare il toast: non e' un errore.
+    // From a trigger there is nobody watching the toast: that is not an error.
   }
 }
 
 
 // ---------------------------------------------------------------------------
-// navigazione del pannello
+// navigating the panel
 // ---------------------------------------------------------------------------
 
 /**
- * Login in due schermate.
+ * Login in two screens.
  *
- * 1. «User Name» -> campo txtUserName, bottone btnSelecUser.
- * 2. «System password» -> campo txtSysPsw, piu' i tre bottoni di impianto.
- *    La password e la scelta dell'impianto viaggiano nello stesso POST, come
- *    fa il browser quando si scrive la password e si preme il bottone.
+ * 1. "User Name" -> field txtUserName, button btnSelecUser.
+ * 2. "System password" -> field txtSysPsw, plus the three installation buttons.
+ *    The password and the choice of installation travel in the same POST, the
+ *    way the browser does it when you type the password and press the button.
  */
 function entra_(sessione, utente, password, sistema) {
   var pagina = sessione.apri();
 
   var campoUtente = pagina.campoTesto('user');
   if (!campoUtente) {
-    throw new Error('Pagina di login inattesa: non trovo il campo dello User Name.');
+    throw new Error('Unexpected login page: I cannot find the User Name field.');
   }
   var bottone = pagina.bottonePerValore('Select');
   if (!bottone) {
     throw new Error(
-      'Pagina di login inattesa: non trovo il bottone «Select». ' +
-      'I bottoni presenti sono: ' + pagina.valoriBottoni().join(', ') + '.'
+      'Unexpected login page: I cannot find the "Select" button. ' +
+      'The buttons present are: ' + pagina.valoriBottoni().join(', ') + '.'
     );
   }
 
@@ -283,8 +284,8 @@ function entra_(sessione, utente, password, sistema) {
     var impianto = pagina.bottonePerValore(sistema);
     if (!impianto) {
       throw new Error(
-        'Sistema «' + sistema + '» non trovato. Quelli disponibili sono: ' +
-        pagina.valoriBottoni().join(', ') + '. Correggi VENEZIA_SISTEMA nelle Proprieta\' script.'
+        'System "' + sistema + '" not found. The available ones are: ' +
+        pagina.valoriBottoni().join(', ') + '. Fix VENEZIA_SISTEMA in the Script properties.'
       );
     }
     dati = pagina.statoForm();
@@ -294,8 +295,8 @@ function entra_(sessione, utente, password, sistema) {
 
   if (!pagina.bottonePerValore('Counters')) {
     throw new Error(
-      'Login non riuscito: dopo l\'accesso non trovo il bottone «Counters». ' +
-      'Controlla utente, System password e nome del sistema.'
+      'Login failed: after signing in I cannot find the "Counters" button. ' +
+      'Check the user, the System password and the system name.'
     );
   }
   return pagina;
@@ -305,24 +306,24 @@ function entra_(sessione, utente, password, sistema) {
 function apriCounters_(sessione, pagina) {
   var bottone = pagina.bottonePerValore('Counters');
   if (!bottone) {
-    throw new Error('Bottone «Counters» sparito dal menu.');
+    throw new Error('The "Counters" button has vanished from the menu.');
   }
   return sessione.posta(pagina, pagina.statoForm(), bottone);
 }
 
 
 /**
- * Sceglie un mese e preme «Get Incoming».
+ * Picks a month and presses "Get Incoming".
  *
- * Torna la pagina nuova, che serve per il postback successivo, insieme alle
- * righe lette. Il mese va rimesso a ogni giro: la pagina che torna porta la
- * selezione precedente.
+ * Returns the new page, which is needed for the next postback, along with the
+ * rows read. The month has to be set again on every pass: the page that comes
+ * back carries the previous selection.
  */
 function scaricaMese_(sessione, pagina, mese) {
   var bottone = pagina.bottonePerNome('BtnGetCounterRecords');
   if (!bottone) {
     throw new Error(
-      'Non trovo il bottone «Get Incoming» (BtnGetCounterRecords) nella pagina Counters.'
+      'I cannot find the "Get Incoming" button (BtnGetCounterRecords) on the Counters page.'
     );
   }
 
@@ -333,15 +334,15 @@ function scaricaMese_(sessione, pagina, mese) {
   var celle = righeIncassi_(nuova);
   if (celle === null) {
     throw new Error(
-      'La tabella dgIncassi non c\'e\' nella risposta per il mese ' + mese + '. ' +
-      'O il pannello e\' cambiato, o la sessione e\' scaduta a meta\' corsa.'
+      'The dgIncassi table is not in the response for month ' + mese + '. ' +
+      'Either the panel has changed, or the session expired mid-run.'
     );
   }
 
   var righe = [];
   for (var i = 0; i < celle.length; i++) {
     var c = celle[i];
-    // data, importo, cassetto, scontrino, sconto -> con il mese davanti
+    // date, amount, locker, receipt, discount -> with the month in front
     righe.push([mese, c[0], Number(c[1]) || 0, c[2], c[3], Number(c[4]) || 0]);
   }
   return { pagina: nuova, righe: righe };
@@ -349,12 +350,12 @@ function scaricaMese_(sessione, pagina, mese) {
 
 
 /**
- * Le righe della tabella degli incassi.
+ * The rows of the takings table.
  *
- * Ancorata all'id «dgIncassi» e non alla posizione: la pagina e' piena di
- * tabelle usate per impaginare, e pescare «la prima» sarebbe fragile.
- * Torna null se la tabella manca del tutto, che e' cosa diversa da un mese
- * senza transazioni, il quale torna una lista vuota.
+ * Anchored to the id "dgIncassi" and not to the position: the page is full of
+ * tables used for layout, and grabbing "the first one" would be fragile.
+ * Returns null if the table is missing altogether, which is a different thing
+ * from a month with no transactions, which returns an empty list.
  */
 function righeIncassi_(pagina) {
   var html = pagina.html;
@@ -376,7 +377,7 @@ function righeIncassi_(pagina) {
     while ((td = reTd.exec(tr[1])) !== null) {
       celle.push(decodifica_(td[1].replace(/<[^>]*>/g, '')).trim());
     }
-    // L'intestazione usa <th>, quindi non produce celle e cade da sola.
+    // The header uses <th>, so it produces no cells and drops out by itself.
     if (celle.length >= 5) righe.push(celle);
   }
   return righe;
@@ -384,13 +385,13 @@ function righeIncassi_(pagina) {
 
 
 // ---------------------------------------------------------------------------
-// la sessione HTTP
+// the HTTP session
 // ---------------------------------------------------------------------------
 
 /**
- * UrlFetchApp non tiene i cookie da solo, e il pannello e' tutto sessione:
- * senza ASP.NET_SessionId ogni postback ricomincia dal login. Qui i cookie si
- * raccolgono a mano dalle intestazioni Set-Cookie e si rimandano indietro.
+ * UrlFetchApp does not keep cookies on its own, and the panel is all session:
+ * without ASP.NET_SessionId every postback starts again from the login. Here
+ * the cookies are collected by hand from the Set-Cookie headers and sent back.
  */
 function Sessione_() {
   this.biscotti = {};
@@ -426,7 +427,7 @@ Sessione_.prototype.chiama_ = function (opzioni) {
   this.assorbi_(risposta);
   var codice = risposta.getResponseCode();
   if (codice !== 200) {
-    throw new Error('Il pannello ha risposto ' + codice + '. Corsa interrotta.');
+    throw new Error('The panel responded ' + codice + '. Run stopped.');
   }
   return risposta.getContentText();
 };
@@ -436,16 +437,16 @@ Sessione_.prototype.apri = function () {
 };
 
 /**
- * Un postback e il suo seguito.
+ * One postback and what follows it.
  *
- * `pagina` e' quella da cui il postback parte, e serve a controllare che nel
- * payload non finisca il nome di un bottone che non siamo autorizzati a
- * premere. `bottone` e' il solo comando che questa chiamata preme.
+ * `pagina` is the page the postback starts from, and it serves to check that
+ * the payload does not end up carrying the name of a button we are not allowed
+ * to press. `bottone` is the only command this call presses.
  *
- * Dopo il POST, finche' la risposta chiede l'auto-postback lo rifa' al posto
- * del browser. Il tetto di tre giri esiste solo per non entrare in un ciclo
- * infinito se un giorno il pannello lo chiedesse per sempre: al 2026-08-19 ne
- * basta sempre uno.
+ * After the POST, for as long as the response asks for the auto-postback it
+ * redoes it in place of the browser. The ceiling of three passes exists only to
+ * avoid an infinite loop should the panel one day ask for it forever: as of
+ * 2026-08-19 one is always enough.
  */
 Sessione_.prototype.posta = function (pagina, dati, bottone) {
   if (bottone) {
@@ -458,7 +459,7 @@ Sessione_.prototype.posta = function (pagina, dati, bottone) {
     if (!AUTO_POSTBACK.test(html)) break;
     var intermedia = new Pagina_(html);
     var seguito = intermedia.statoForm();
-    // Un postback della pagina su se stessa: nessun bottone premuto.
+    // A postback of the page onto itself: no button pressed.
     seguito['__EVENTTARGET'] = '__Page';
     seguito['__EVENTARGUMENT'] = 'PBArg';
     controllaDati_(intermedia, seguito);
@@ -468,28 +469,27 @@ Sessione_.prototype.posta = function (pagina, dati, bottone) {
 };
 
 /**
- * L'ultima rete prima che un POST parta.
+ * The last net before a POST leaves.
  *
- * Ragiona per lista di cio' che e' consentito. Una chiave del payload puo'
- * passare solo se e' un campo tecnico di WebForms, oppure un campo di testo
- * che la pagina ha dichiarato (quelli non possono premere niente), oppure uno
- * dei quattro bottoni di BOTTONI_CONSENTITI. Qualunque altro nome di bottone
- * fa fallire la corsa, anche uno che oggi non esiste.
+ * It works from a list of what is allowed. A payload key can pass only if it is
+ * a WebForms technical field, or a text field the page has declared (those
+ * cannot press anything), or one of the four buttons in BOTTONI_CONSENTITI.
+ * Any other button name fails the run, including one that does not exist today.
  */
 function controllaDati_(pagina, dati) {
   for (var nome in dati) {
     if (nome.indexOf('__') === 0 || nome === 'monthList') continue;
 
-    // I campi non-submit della pagina: testo, password, hidden. Non sono
-    // comandi, qualunque cosa il fornitore decida di chiamarli.
+    // The page's non-submit fields: text, password, hidden. They are not
+    // commands, whatever the vendor decides to call them.
     if (pagina.campi.hasOwnProperty(nome) && pagina.tipi[nome] !== 'submit') continue;
 
     if (bottoneConsentito_(nome)) continue;
 
     throw new Error(
-      'Rifiuto di mandare «' + nome + '» al pannello: non e\' fra i comandi che ' +
-      'questo script puo\' premere. Se il pannello e\' cambiato, va aggiornata ' +
-      'la lista BOTTONI_CONSENTITI, a ragion veduta.'
+      'Refusing to send "' + nome + '" to the panel: it is not among the commands ' +
+      'this script may press. If the panel has changed, the BOTTONI_CONSENTITI ' +
+      'list has to be updated, with good reason.'
     );
   }
 }
@@ -503,13 +503,13 @@ function bottoneConsentito_(nome) {
 
 
 // ---------------------------------------------------------------------------
-// lettura dell'HTML
+// reading the HTML
 // ---------------------------------------------------------------------------
 
 /**
- * Una pagina WebForms: i campi del form, i bottoni, e l'html grezzo per il
- * resto. Niente parser vero, che su Apps Script non c'e': espressioni
- * regolari, che su un HTML generato sempre allo stesso modo bastano.
+ * A WebForms page: the form fields, the buttons, and the raw html for the rest.
+ * No real parser, because there is none on Apps Script: regular expressions,
+ * which are enough on HTML always generated the same way.
  */
 function Pagina_(html) {
   this.html = html;
@@ -533,7 +533,7 @@ function Pagina_(html) {
   }
 }
 
-/** I campi che ogni postback deve riportare indietro: viewstate e compagnia. */
+/** The fields every postback has to send back: viewstate and company. */
 Pagina_.prototype.statoForm = function () {
   var dati = {};
   for (var nome in this.campi) {
@@ -556,13 +556,13 @@ Pagina_.prototype.opzioni = function (nomeSelect) {
 };
 
 /**
- * Un bottone dal testo che ci sta scritto sopra, per corrispondenza ESATTA.
+ * A button from the text written on it, by EXACT match.
  *
- * Niente ricerca parziale, di proposito. «Luggage Cannaregio» e' contenuto
- * dentro «Luggage Cannaregio cloud»: una corrispondenza approssimativa
- * sceglierebbe l'impianto sbagliato senza dirlo. E in generale, il momento in
- * cui una ricerca esatta fallisce e' il momento in cui il pannello e'
- * cambiato, cioe' il peggiore per tirare a indovinare: meglio fermarsi.
+ * No partial search, on purpose. "Luggage Cannaregio" is contained inside
+ * "Luggage Cannaregio cloud": an approximate match would pick the wrong
+ * installation without saying so. And in general, the moment an exact search
+ * fails is the moment the panel has changed, that is the worst moment to
+ * guess: better to stop.
  */
 Pagina_.prototype.bottonePerValore = function (testo) {
   testo = String(testo).trim().toLowerCase();
@@ -572,7 +572,7 @@ Pagina_.prototype.bottonePerValore = function (testo) {
   return null;
 };
 
-/** Un bottone dal suo name, per corrispondenza esatta. Stessa ragione. */
+/** A button from its name, by exact match. Same reason. */
 Pagina_.prototype.bottonePerNome = function (nome) {
   nome = String(nome).toLowerCase();
   for (var i = 0; i < this.bottoni.length; i++) {
@@ -588,10 +588,10 @@ Pagina_.prototype.valoriBottoni = function () {
 };
 
 /**
- * Un campo di testo il cui nome contiene il frammento dato.
+ * A text field whose name contains the given fragment.
  *
- * Ristretto ai campi di tipo «text»: cosi' non puo' mai pescare un hidden
- * tecnico ne', tanto meno, un bottone.
+ * Restricted to fields of type "text": that way it can never pick up a
+ * technical hidden, let alone a button.
  */
 Pagina_.prototype.campoTesto = function (frammento) {
   frammento = String(frammento).toLowerCase();
@@ -604,8 +604,8 @@ Pagina_.prototype.campoTesto = function (frammento) {
 };
 
 /**
- * Il campo della System password, cercato per tipo e non per nome: sul
- * pannello si chiama «txtSysPsw», che non contiene la parola «password».
+ * The System password field, looked up by type and not by name: on the panel it
+ * is called "txtSysPsw", which does not contain the word "password".
  */
 Pagina_.prototype.campoPassword = function () {
   for (var nome in this.tipi) {
@@ -626,26 +626,26 @@ function decodifica_(testo) {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&');  // per ultimo, o si mangia le altre entita'
+    .replace(/&amp;/g, '&');  // last, or it eats the other entities
 }
 
 
 // ---------------------------------------------------------------------------
-// archivio
+// archive
 // ---------------------------------------------------------------------------
 
 /**
- * Le righe gia' nel foglio, indicizzate per numero di scontrino.
+ * The rows already in the sheet, indexed by receipt number.
  *
- * E' la parte che rende lo script sicuro da rilanciare: quello che c'e' non si
- * perde, e i mesi usciti dalla finestra dei tre restano.
+ * This is the part that makes the script safe to run again: what is there is
+ * not lost, and the months that have left the three-month window stay.
  */
 function leggiArchivio_(scheda) {
   var esistenti = {};
   if (!scheda) return esistenti;
 
   var ultima = scheda.getLastRow();
-  if (ultima < 3) return esistenti;  // riga 1 nota, riga 2 intestazione
+  if (ultima < 3) return esistenti;  // row 1 note, row 2 header
 
   var valori = scheda.getRange(3, 1, ultima - 2, COLONNE.length).getValues();
   for (var i = 0; i < valori.length; i++) {
@@ -664,7 +664,7 @@ function leggiArchivio_(scheda) {
   return esistenti;
 }
 
-/** Ordinate per data, che e' l'ordine in cui uno le vuole leggere. */
+/** Sorted by date, which is the order you want to read them in. */
 function ordina_(archivio) {
   var righe = [];
   for (var chiave in archivio) righe.push(archivio[chiave]);
@@ -684,7 +684,7 @@ function contaChiavi_(oggetto) {
 
 
 // ---------------------------------------------------------------------------
-// scrittura
+// writing
 // ---------------------------------------------------------------------------
 
 function scriviScheda_(foglio, nome, colonne, righe, nota) {
@@ -694,15 +694,15 @@ function scriviScheda_(foglio, nome, colonne, righe, nota) {
   var intestazione = colonne.map(function (_, i) { return i === 0 ? nota : ''; });
   var valori = [intestazione, colonne].concat(righe);
 
-  // NIENTE clear() qui. Prima si scriveva sopra un foglio svuotato, e fra lo
-  // svuotamento e la scrittura c'era una finestra di qualche secondo in cui la
-  // scheda era vuota: se l'esecuzione moriva li' — e questo pannello va in
-  // timeout facile — l'archivio spariva, e i mesi usciti dalla finestra dei
-  // tre non li ha piu' nessuno. Ora si sovrascrive e basta, e la coda vecchia
-  // si toglie solo DOPO che i dati nuovi sono a posto.
+  // NO clear() here. It used to write over an emptied sheet, and between the
+  // emptying and the writing there was a window of a few seconds in which the
+  // tab was empty: if the execution died there, and this panel times out
+  // easily, the archive disappeared, and nobody has the months that left the
+  // three-month window any more. Now it just overwrites, and the old tail is
+  // removed only AFTER the new data is in place.
 
-  // La griglia va allargata prima di scrivere, altrimenti setValues sbatte
-  // contro il bordo del foglio.
+  // The grid has to be widened before writing, otherwise setValues runs into
+  // the edge of the sheet.
   if (scheda.getMaxRows() < valori.length) {
     scheda.insertRowsAfter(scheda.getMaxRows(), valori.length - scheda.getMaxRows() + 10);
   }
@@ -710,8 +710,8 @@ function scriviScheda_(foglio, nome, colonne, righe, nota) {
     scheda.insertColumnsAfter(scheda.getMaxColumns(), colonne.length - scheda.getMaxColumns() + 2);
   }
 
-  // I formati vanno messi PRIMA di scrivere, o il foglio converte «08/2026» in
-  // una data e la riga non torna piu' uguale a quella del pannello.
+  // The formats have to be set BEFORE writing, or the sheet converts "08/2026"
+  // into a date and the row no longer matches the one from the panel.
   if (righe.length) {
     for (var c = 0; c < colonne.length; c++) {
       scheda.getRange(3, c + 1, righe.length, 1).setNumberFormat(FORMATI[c]);
@@ -720,17 +720,17 @@ function scriviScheda_(foglio, nome, colonne, righe, nota) {
 
   scheda.getRange(1, 1, valori.length, colonne.length).setValues(valori);
 
-  // Ora che i dati nuovi sono scritti, via l'eventuale coda della versione
-  // precedente. Con un archivio che cresce non succede quasi mai, ma se un
-  // giorno succedesse senza questo taglio resterebbero righe fantasma in
-  // fondo, che IMPORTRANGE porterebbe sul foglio di gestione.
+  // Now that the new data is written, away with any tail from the previous
+  // version. With an archive that grows it almost never happens, but if one day
+  // it did, without this trim there would be ghost rows at the bottom, which
+  // IMPORTRANGE would carry over to the management sheet.
   var ultima = scheda.getLastRow();
   if (ultima > valori.length) {
     scheda.deleteRows(valori.length + 1, ultima - valori.length);
   }
   scheda.setFrozenRows(2);
 
-  Logger.log('Scritte ' + righe.length + ' righe nella scheda «' + nome + '».');
+  Logger.log('Wrote ' + righe.length + ' rows to the "' + nome + '" tab.');
 }
 
 
@@ -741,6 +741,6 @@ function scriviScheda_(foglio, nome, colonne, righe, nota) {
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Nutrie')
-    .addItem('Aggiorna incassi Venezia', 'aggiornaIncassi')
+    .addItem('Update Venice takings', 'aggiornaIncassi')
     .addToUi();
 }
