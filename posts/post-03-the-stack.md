@@ -2,7 +2,8 @@
 
 The first decision was not which tools to use. It was how little to spend. This
 is a low margin business, and a stack with a fat monthly fee eats exactly the
-margin I am trying to grow. There is a second risk too, less obvious: overkill.
+margin I am trying to grow. There is a second risk too: overkill.
+
 Reaching for a powerful tool when a simple one gets you to the same place. This
 is an experiment, so I would rather start under equipped and add only what
 proves it is needed. Here is what I am running today.
@@ -18,13 +19,12 @@ proves it is needed. Here is what I am running today.
 - No programming background.
 - I can build low code automations, but so far always with AI helping me do it.
 - So I cannot judge which tool is the most efficient. I can only validate one by using it.
-- That constraint shapes every choice below.
 
 **THE STACK**
 
 - Starting point: a setup recommended in a YouTube video, picked after comparing options.
 - Obsidian as the company brain. About 40 atomic notes to start, linked to each other.
-- A small Python script that enforces the rules, so every note keeps the same format.
+- A small Python script that enforces the rules, so every note keeps the same format and links.
 - Claude Code on a capped budget. An 80 euro a month plan is a real cost against these margins, so I am not committing to it until the return is visible.
 - Google Drive as the working layer. Sheets for reporting and as the base of the automations, with Google Scripts on top of them.
 
@@ -32,4 +32,4 @@ proves it is needed. Here is what I am running today.
 
 - No RAG. No MCP. Neither solves a problem I have today.
 
-Next post: the first weekly log.
+Next post: The First Wow.
