@@ -3,158 +3,304 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Giacomo Bottacin | Process Improvement Portfolio</title>
+<title>Nutrie log</title>
+<meta name="description" content="Public operating log: putting an AI brain on top of a small automated luggage storage business in Venice, and measuring whether the margin moves.">
 <style>
   :root {
-    --navy: #1A2B3C;
-    --teal: #0E765A;
-    --grey: #555555;
-    --black: #222222;
-    --bg: #FAFAF9;
+    color-scheme: light dark;
+    --bg: #fbfbf9;
+    --panel: #ffffff;
+    --ink: #16181c;
+    --ink-soft: #5c6169;
+    --ink-faint: #8b9098;
+    --rule: #e0dfda;
+    --rule-soft: #eceae5;
+    --accent: #0e765a;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121316;
+      --panel: #17191d;
+      --ink: #e8e8e4;
+      --ink-soft: #a2a7ae;
+      --ink-faint: #767b83;
+      --rule: #2b2e34;
+      --rule-soft: #232529;
+      --accent: #4fbf9b;
+    }
   }
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: Arial, Helvetica, sans-serif;
-    color: var(--black);
-    background: var(--bg);
     margin: 0;
-    line-height: 1.55;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 15px;
+    line-height: 1.6;
+    font-variant-ligatures: none;
   }
-  .wrap { max-width: 780px; margin: 0 auto; padding: 56px 24px 80px; }
-  header { border-bottom: 2px solid var(--teal); padding-bottom: 18px; margin-bottom: 36px; }
-  h1 { color: var(--navy); font-size: 2.1rem; margin: 0 0 6px; }
-  .tagline { color: var(--teal); font-size: 1.05rem; font-weight: 600; margin: 0 0 10px; }
-  .contact { color: var(--grey); font-size: 0.92rem; }
-  .contact a { color: var(--grey); text-decoration: none; }
-  .intro { font-size: 1rem; margin-bottom: 44px; max-width: 680px; }
-  .case { margin-bottom: 52px; }
-  .case-label { color: var(--teal); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
-  .case h2 { color: var(--navy); font-size: 1.35rem; margin: 0 0 6px; }
-  .case .meta { color: var(--grey); font-size: 0.88rem; margin-bottom: 16px; font-style: italic; }
-  .case h3 { color: var(--navy); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.04em; margin: 18px 0 6px; }
-  .case p, .case ul { margin: 0 0 8px; font-size: 0.97rem; }
-  .case ul { padding-left: 20px; }
-  .results { background: #F0F5F3; border-left: 3px solid var(--teal); padding: 12px 16px; margin-top: 10px; }
-  .results div { font-size: 0.95rem; margin-bottom: 4px; }
-  .results strong { color: var(--navy); }
-  footer { border-top: 1px solid #ddd; padding-top: 20px; margin-top: 40px; color: var(--grey); font-size: 0.85rem; }
-  hr.rule { border: none; border-top: 1px solid #e2e2e2; margin: 40px 0; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 22px 96px; }
+
+  /* Masthead */
+  header.top { padding: 64px 0 0; }
+  .kicker {
+    font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 14px;
+  }
+  h1 { font-size: 27px; line-height: 1.2; margin: 0 0 16px; letter-spacing: -.01em; }
+  .standfirst { color: var(--ink-soft); margin: 0 0 26px; max-width: 60ch; }
+  .meta-grid {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px 24px;
+    font-size: 12.5px;
+  }
+  .meta-grid dt { color: var(--ink-faint); text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; margin-bottom: 3px; }
+  .meta-grid dd { margin: 0; color: var(--ink); }
+
+  /* Index */
+  section.index { margin: 40px 0 0; }
+  h2.sect {
+    font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 14px; font-weight: 600;
+  }
+  ol.toc { list-style: none; margin: 0; padding: 0; counter-reset: p; }
+  ol.toc li { counter-increment: p; border-bottom: 1px solid var(--rule-soft); }
+  ol.toc li:first-child { border-top: 1px solid var(--rule-soft); }
+  ol.toc a {
+    display: grid; grid-template-columns: 34px 1fr; gap: 10px;
+    padding: 11px 0; text-decoration: none; color: inherit;
+  }
+  ol.toc a:hover { color: var(--accent); }
+  ol.toc a::before { content: counter(p, decimal-leading-zero); color: var(--ink-faint); font-size: 12.5px; }
+  ol.toc .t { font-size: 14px; }
+  ol.toc .d { display: block; color: var(--ink-faint); font-size: 12.5px; }
+  li.pending { color: var(--ink-faint); display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 11px 0; font-size: 14px; }
+  li.pending::before { content: counter(p, decimal-leading-zero); font-size: 12.5px; }
+
+  /* Posts */
+  article { padding-top: 56px; margin-top: 40px; border-top: 1px solid var(--rule); scroll-margin-top: 20px; }
+  article .num { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+  article h3 { font-size: 21px; line-height: 1.25; margin: 0 0 20px; letter-spacing: -.01em; }
+  article p { margin: 0 0 18px; }
+  article .lede { color: var(--ink); }
+  h4 {
+    font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 30px 0 10px; font-weight: 600;
+  }
+  article ul, article ol { margin: 0 0 18px; padding-left: 20px; }
+  article li { margin-bottom: 7px; }
+  article li::marker { color: var(--ink-faint); }
+  .callout {
+    border-left: 2px solid var(--accent);
+    padding: 2px 0 2px 16px;
+    margin: 0 0 18px;
+    color: var(--ink);
+  }
+  .next {
+    margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--rule-soft);
+    font-size: 13px; color: var(--ink-faint);
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th { color: var(--ink-faint); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+
+  footer {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-size: 12.5px; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-soft); }
+  a { color: var(--accent); }
+  .backtop { font-size: 12.5px; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <header>
-    <h1>GIACOMO BOTTACIN</h1>
-    <p class="tagline">Process Improvement Leader, EU Operations &amp; CX</p>
-    <p class="contact">Athens, Greece &nbsp;|&nbsp; +39 331 275 1121 &nbsp;|&nbsp;
-      <a href="mailto:giacbotta@gmail.com">giacbotta@gmail.com</a> &nbsp;|&nbsp;
-      <a href="https://linkedin.com/in/giacomo-bottacin-539856b9">linkedin.com/in/giacomo-bottacin-539856b9</a>
-    </p>
-  </header>
+<header class="top" id="top">
+  <p class="kicker">Operating log</p>
+  <h1>An AI brain on a boring business.</h1>
+  <p class="standfirst">
+    I own an automated luggage storage in Venice. Small, low margin, physical,
+    seasonal. I am putting an AI brain and a set of agents on top of it and
+    publishing what happens. One post a week, real numbers, including the ones
+    that go the wrong way.
+  </p>
+  <dl class="meta-grid">
+    <div><dt>Business</dt><dd>Automated luggage storage, Venice</dd></div>
+    <div><dt>Acquired</dt><dd>2023, with a friend</dd></div>
+    <div><dt>Cadence</dt><dd>One post per week</dd></div>
+    <div><dt>Success criterion</dt><dd>Margin up, my hours down, same week</dd></div>
+  </dl>
+</header>
 
-  <p class="intro">
-    Three projects that show the same pattern: find the process problem nobody has
-    named yet, build the fix, and put data behind it. Two are inside DHL Express's
-    European operations; one is a small business I own and automated myself.
+<section class="index">
+  <h2 class="sect">Index</h2>
+  <ol class="toc">
+    <li><a href="#post-1"><span class="t">The experiment<span class="d">Why this business, what I mean by brain, what I measure.</span></span></a></li>
+    <li><a href="#post-2"><span class="t">Where we started from<span class="d">What we bought, what was wrong, what it produced.</span></span></a></li>
+    <li><a href="#post-3"><span class="t">The technical foundation<span class="d">The stack, and why it is deliberately small.</span></span></a></li>
+    <li class="pending">Weekly logs. First one pending.</li>
+  </ol>
+</section>
+
+<article id="post-1">
+  <p class="num">Post 01</p>
+  <h3>The experiment</h3>
+  <p class="lede">
+    In 2023 I had money to invest and no interest in investing it. I hold my share
+    of ETFs and I find the whole thing boring to death. I wanted to own something
+    that behaved like an investment but was actually mine: a business that ran by
+    itself, that I could keep building on top of, and that I could develop with a
+    friend for the fun of it. So we bought an automated luggage storage business in
+    Venice. Small, local, low margin, about as unglamorous as it gets. It worked.
+    Now I want to know something harder. If I put an AI brain and a team of agents
+    on top of a business like this, does the margin actually move? I am running that
+    experiment in public. One post a week, real numbers.
   </p>
 
-  <!-- CASE STUDY 1 -->
-  <div class="case">
-    <div class="case-label">Case Study 01</div>
-    <h2>Finding the data gap that was quietly skewing pickup complaints</h2>
-    <div class="meta">DHL Express &middot; Customer Experience Regional Manager, EU &middot; Ongoing, end-to-end owner</div>
+  <h4>Why this business</h4>
+  <ul>
+    <li>I wanted an asset I own and can change, not a position I hold and watch.</li>
+    <li>It already runs without us on site. Anything I add on top lands straight on margin.</li>
+    <li>Worst possible constraints: finite space, a physical location, low price elasticity, seasonal demand.</li>
+    <li>If AI moves the margin here, it moves the margin almost anywhere.</li>
+  </ul>
 
-    <h3>Context</h3>
-    <p>I own pickup customer experience end to end across DHL Express's European
-    region, coordinating regional, global, and local stakeholders to diagnose
-    issues, pilot fixes, and scale them across the network.</p>
+  <h4>What I mean by brain</h4>
+  <ul>
+    <li>One system that sees all the business data: bookings, occupancy, costs, ad spend, customer requests.</li>
+    <li>Separate agents on top, one job each: pricing, ads, support, content, monitoring.</li>
+    <li>I decide. They execute and report.</li>
+  </ul>
 
-    <h3>Challenge</h3>
-    <p>Pickup-related complaints were rising and nobody could see why. Two problems
-    were tangled together: customers were offered pickup time windows that did not
-    match real operational capacity, and courier no-shows were being logged the
-    same way as genuine customer unavailability, because no data category existed
-    to separate them. That second gap had corrupted root-cause data for years,
-    worse on ad-hoc pickups than scheduled ones.</p>
+  <h4>What I measure</h4>
+  <ul>
+    <li>Margin per deposit.</li>
+    <li>Occupancy rate.</li>
+    <li>Customer acquisition cost.</li>
+    <li>My own hours on operations.</li>
+  </ul>
+  <p class="callout">One success criterion: margin up and my hours down, in the same week.</p>
 
-    <h3>What I built and piloted</h3>
-    <ul>
-      <li><strong>Driver verification app:</strong> requires the courier to photograph the doorbell and captures geolocation when marking a pickup as "customer not ready." Ends false attribution at the source.</li>
-      <li><strong>Capacity realignment:</strong> realigned the pickup windows offered to customers with real operational capacity.</li>
-      <li><strong>Proactive failed-pickup automation:</strong> automatically messages the customer when a pickup fails and supports rescheduling, something the process never did before.</li>
-    </ul>
+  <h4>What I do not want</h4>
+  <ul>
+    <li>Revenue growth bought by burning margin on ads. That already happened once.</li>
+    <li>More tools. I want less work, not a bigger stack.</li>
+    <li>To end up on call. The entire point of this business is that it does not need me.</li>
+  </ul>
 
-    <div class="results">
-      <div><strong>&minus;20%</strong> overall company complaints in the Austria/Germany driver-verification pilot</div>
-      <div><strong>+10-point</strong> lift in pickup NPS in the Hungary capacity-realignment pilot</div>
-      <div><strong>Zero detractors</strong> so far on the topic in the Portugal/Sweden proactive-messaging pilot</div>
-    </div>
-    <p style="margin-top:10px; color:var(--grey); font-size:0.88rem;">Status: all three are live pilots; scale-up across the network is in progress.</p>
-  </div>
+  <p class="next">Next post: the baseline. What we bought, what was wrong with it, what we changed.</p>
+</article>
 
-  <hr class="rule">
+<article id="post-2">
+  <p class="num">Post 02</p>
+  <h3>Where we started from</h3>
+  <p class="lede">
+    Before the experiment, the baseline. In 2023 we bought an automated luggage
+    storage business in Venice from an owner who ran the physical side fine and had
+    no idea how to sell it online. Nothing was broken. The business was invisible
+    and manual. We applied the bare minimum of digital knowledge across three areas.
+    This is what we found, what we changed and what it produced. The AI experiment
+    only means something measured against these numbers.
+  </p>
 
-  <!-- CASE STUDY 2 -->
-  <div class="case">
-    <div class="case-label">Case Study 02</div>
-    <h2>Cutting a multi-week pricing cycle without waiting for other teams' systems</h2>
-    <div class="meta">DHL Express &middot; Senior Continuous Improvement Internal Consultant, EU &middot; 2023</div>
+  <h4>The objective</h4>
+  <ul>
+    <li>An extra source of income that does not require our presence.</li>
+    <li>An automated luggage storage should already be exactly that: machines, a door, a code, no staff.</li>
+    <li>It was not. That gap was the whole opportunity.</li>
+  </ul>
 
-    <h3>Context</h3>
-    <p>The regional tender and contract-pricing process sets pricing for DHL
-    Express's major-account contracts across the EU, including global and
-    corporate accounts with EU lanes, covering the bulk of the division's
-    key-account revenue.</p>
+  <h4>What we found</h4>
+  <ul>
+    <li>Access and usage instructions written badly. Customers arrived and did not know what to do.</li>
+    <li>So the previous owner had to be reachable all day to explain it. A business designed to run without people needed a person permanently on call.</li>
+    <li>No online booking. Internal operations run by hand.</li>
+    <li>The phone ringing constantly, always for the same predictable problems.</li>
+  </ul>
 
-    <h3>Challenge</h3>
-    <p>The cycle took 33 days. Part of the delay sat with other departments,
-    especially Pricing, whose systems were locked into brittle Excel macros and
-    SharePoints they were unwilling to change. There was no clean API to build
-    against.</p>
+  <h4>What we changed</h4>
+  <p>Three areas. None of them sophisticated.</p>
+  <ol>
+    <li>User experience. Rewrote from scratch how you find the place, how you get in, how you use it.</li>
+    <li>Automation. Online booking and internal operations first. Then we mapped every possible customer problem, one by one, and automated or prevented most of them. Target: zero inbound calls.</li>
+    <li>Online selling. Basic level. We are not experts and we did not pretend to be.</li>
+  </ol>
 
-    <h3>What I built</h3>
-    <p>A production tool combining Power Apps and Power Automate, with heavy LLM
-    support during the build, engineered around the legacy systems rather than
-    waiting for them to modernize.</p>
+  <h4>Result</h4>
+  <ul>
+    <li>Revenue doubled.</li>
+    <li>Costs went down first, then back above the starting point. Almost all of that increase is ad spend, with positive ROAS.</li>
+    <li>Neither of us lives in Venice any more. The business runs there without us.</li>
+  </ul>
 
-    <div class="results">
-      <div><strong>33 &rarr; 23 days</strong> (about 30% faster) on the regional tender cycle, across the bulk of the EU division's key-account revenue</div>
-    </div>
-  </div>
+  <h4>The point</h4>
+  <p class="callout">
+    We applied nothing advanced. The bare minimum was enough to double it.
+    That says more about the sector than about us.
+  </p>
 
-  <hr class="rule">
+  <p class="next">Next post: the technical detail. What is automated today, and where it still breaks.</p>
+</article>
 
-  <!-- CASE STUDY 3 -->
-  <div class="case">
-    <div class="case-label">Case Study 03</div>
-    <h2>Automating a small business until it runs itself</h2>
-    <div class="meta">Nutrie Srl &middot; Owner &middot; Venice, Italy &middot; 2023 to present</div>
+<article id="post-3">
+  <p class="num">Post 03</p>
+  <h3>The technical foundation</h3>
+  <p class="lede">
+    The first decision was not which tools to use. It was how little to spend. This
+    is a low margin business, and a stack with a fat monthly fee eats exactly the
+    margin I am trying to grow. There is a second risk too, less obvious: overkill.
+    Reaching for a powerful tool when a simple one gets you to the same place. This
+    is an experiment, so I would rather start under equipped and add only what
+    proves it is needed. Here is what I am running today.
+  </p>
 
-    <h3>Context</h3>
-    <p>Nutrie is a self-service luggage-storage business in Venice, acquired with a
-    partner in 2023 and run entirely remotely.</p>
+  <h4>Why I started small</h4>
+  <ul>
+    <li>Monthly tool costs come straight out of a thin margin. Every subscription has to justify itself against that number.</li>
+    <li>Overkill is a real risk right now. Powerful tool, simple job, no gain.</li>
+    <li>Starting light means every upgrade later is an answer to a problem I actually hit.</li>
+  </ul>
 
-    <h3>Challenge</h3>
-    <p>Bookings and customer questions were handled manually, generating 4 to 5
-    enquiries a day, all of it my time.</p>
+  <h4>What I can and cannot do</h4>
+  <ul>
+    <li>No programming background.</li>
+    <li>I can build low code automations, but so far always with AI helping me do it.</li>
+    <li>So I cannot judge which tool is the most efficient. I can only validate one by using it.</li>
+    <li>That constraint shapes every choice below.</li>
+  </ul>
 
-    <h3>What I built</h3>
-    <p>I automated the booking flow and customer communication myself, so the
-    business runs without day-to-day intervention.</p>
+  <h4>The stack</h4>
+  <table>
+    <thead><tr><th>Layer</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>Starting point</td><td>A setup recommended in a YouTube video, picked after comparing options.</td></tr>
+      <tr><td>Company brain</td><td>Obsidian. About 40 atomic notes to start, linked to each other.</td></tr>
+      <tr><td>Format enforcement</td><td>A small Python script that enforces the rules, so every note keeps the same format.</td></tr>
+      <tr><td>Agent runtime</td><td>Claude Code on a capped budget. An 80 euro a month plan is a real cost against these margins, so I am not committing to it until the return is visible.</td></tr>
+      <tr><td>Working layer</td><td>Google Drive. Sheets for reporting and as the base of the automations, with Google Scripts on top of them.</td></tr>
+    </tbody>
+  </table>
 
-    <div class="results">
-      <div><strong>Under 1 enquiry/week</strong>, down from 4 to 5 a day</div>
-      <div><strong>Revenue roughly doubled</strong> (about &euro;23k to &euro;47k) over two years, with costs held flat</div>
-      <div>Runs hands-off for weeks at a time; about 2 hours a month of admin</div>
-    </div>
-  </div>
+  <h4>What I left out</h4>
+  <p class="callout">No RAG. No MCP. Neither solves a problem I have today.</p>
 
-  <footer>
-    <p>These are working case studies from an active career, not a finished
-    portfolio piece. Details are shared at the level appropriate for a public page;
-    ask me for more depth on any of them.</p>
-  </footer>
+  <p class="next">Next post: the first weekly log.</p>
+</article>
+
+<footer>
+  <p>
+    Written by Giacomo Bottacin. Source and posts in markdown:
+    <a href="https://github.com/Giacbotta/Giacbotta.github.io">github.com/Giacbotta/Giacbotta.github.io</a>.
+  </p>
+  <p class="backtop"><a href="#top">Back to top</a></p>
+</footer>
 
 </div>
 </body>
