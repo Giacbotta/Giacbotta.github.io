@@ -32,7 +32,6 @@ proves it is needed. Here is what I am running today.
 
 - No RAG. No MCP. Neither solves a problem I have today.
 
-Everything linked above is published in this repo, with credentials and vendor
-hostnames replaced by placeholders.
+Everything linked above is published in this repo.
 
 Next post: The First Wow.
