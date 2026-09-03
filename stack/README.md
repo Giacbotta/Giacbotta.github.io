@@ -7,8 +7,11 @@ subscription costs, and no programming background. So the rule is to start under
 equipped and add only what proves it is needed.
 
 Everything here is what actually runs, with credentials, hostnames and contact
-details replaced by placeholders. The comments and the READMEs are in Italian,
-because that is the language the business runs in. The code is not.
+details replaced by placeholders. The business runs in Italian, so the code, the
+comments and the notes were written in Italian and translated for this repo.
+Identifiers, sheet and tab names, environment variable names and note file names
+were left in the original: they bind to live systems, and renaming them here
+would make the published copy diverge from the one that runs.
 
 ## Components
 
