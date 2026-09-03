@@ -8,7 +8,7 @@
             "type": "command",
             "command": "python \"C:/path/to/vault/<Vault Name>/workspace/gate_hook.py\"",
             "timeout": 60,
-            "statusMessage": "Quality gate del vault"
+            "statusMessage": "Vault quality gate"
           }
         ]
       }

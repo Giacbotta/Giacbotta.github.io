@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-Hook PostToolUse per Claude Code: dopo ogni Write/Edit, se il file toccato sta
-nel vault "Nutrie Brain", lancia il quality gate giusto e riferisce solo se
-trova qualcosa.
+PostToolUse hook for Claude Code: after every Write/Edit, if the file touched is
+inside the vault, run the right quality gate and report back only if it finds
+something.
 
-- file sotto una cartella di contenuto   -> quality_gate.py <vault>
-- file sotto workspace/                   -> quality_gate.py <vault> --workspace
-- file sotto sources/ o fuori dal vault   -> non fa niente
+- file under a content folder      -> quality_gate.py <vault>
+- file under workspace/            -> quality_gate.py <vault> --workspace
+- file under sources/ or outside   -> does nothing
 
-Il gate non modifica nulla. Se e' pulito, questo hook esce in silenzio (exit 0).
-Se trova errori, li stampa su stderr ed esce con codice 2, cosi' Claude li vede
-e li corregge nello stesso giro.
+The gate modifies nothing. If it is clean, this hook exits silently (exit 0).
+If it finds errors it prints them on stderr and exits with code 2, so Claude
+sees them and fixes them in the same turn.
 
-Registrato in .claude/settings.json come hook PostToolUse con matcher "Write|Edit".
+Registered in .claude/settings.json as a PostToolUse hook with matcher "Write|Edit".
 """
 
 import json
@@ -20,7 +20,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-# workspace/gate_hook.py -> parent.parent = "Nutrie Brain"
+# workspace/gate_hook.py -> parent.parent = the vault root
 VAULT = Path(__file__).resolve().parent.parent
 GATE = VAULT / "workspace" / "quality_gate.py"
 SKIP_UNDER = {"sources"}
@@ -45,7 +45,7 @@ def edited_path(event: dict):
 
 
 def classify(path: Path):
-    """Ritorna 'content', 'workspace' o None (da ignorare)."""
+    """Returns 'content', 'workspace' or None (ignore)."""
     try:
         rel = path.relative_to(VAULT)
     except ValueError:
@@ -79,16 +79,18 @@ def main():
     try:
         out = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     except Exception as e:
-        print(f"gate_hook: impossibile lanciare il quality gate ({e})", file=sys.stderr)
+        print(f"gate_hook: could not run the quality gate ({e})", file=sys.stderr)
         return 0
 
     report = (out.stdout or "") + (out.stderr or "")
-    if "OK, 0 errori" in report or "OK, 0 problemi" in report:
+    # These two strings are printed by quality_gate.py. They are the only signal
+    # that the run was clean, so the two files have to be changed together.
+    if "OK, 0 errors" in report or "OK, 0 problems" in report:
         return 0
 
-    label = "workspace" if kind == "workspace" else "contenuti"
+    label = "workspace" if kind == "workspace" else "content"
     print(
-        f"Quality gate ({label}) dopo la modifica di {path.name}:\n\n{report.strip()}",
+        f"Quality gate ({label}) after editing {path.name}:\n\n{report.strip()}",
         file=sys.stderr,
     )
     return 2

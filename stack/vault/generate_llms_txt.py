@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 """
-Genera llms.txt alla radice del vault "Nutrie Brain": l'indice-porta per le AI.
+Generates llms.txt at the root of the vault: the front-door index for AI.
 
-llms.txt e' un file DERIVATO: questo script lo rigenera sempre da zero a
-partire dal frontmatter delle note. Non va mai modificato a mano -- se manca
-qualcosa, si corregge la nota sorgente e si rilancia lo script.
+llms.txt is a DERIVED file: this script always regenerates it from scratch out
+of the notes' frontmatter. It is never edited by hand. If something is missing,
+fix the source note and run the script again.
 
-Per ogni cartella di contenuto (self, areas, projects, concepts, docs,
-entities, data, code, outputs), elenca le note in quella cartella nel formato:
+For every content folder (self, areas, projects, concepts, docs, entities,
+data, code, outputs) it lists the notes in that folder in the format:
 
-    - [[nome-file]] -- summary
+    - [[file-name]] -- summary
 
-Il summary viene SOLO dal campo "summary" del frontmatter di ciascuna nota:
-nessun testo viene inventato o riassunto da qui. sources/ e workspace/ sono
-escluse perche' sono materiale grezzo e scratch, non note atomiche.
+The summary comes ONLY from the "summary" field in each note's frontmatter:
+no text is invented or summarised here. sources/ and workspace/ are excluded
+because they hold raw material and scratch, not atomic notes.
 
-Uso:
-    python generate_llms_txt.py [percorso_vault]
+Usage:
+    python generate_llms_txt.py [vault_path]
 """
 
 import re
@@ -59,7 +59,7 @@ def find_content_dirs(vault_root: Path):
 
 
 def build_llms_txt(vault_root: Path) -> str:
-    lines = ["# Nutrie Brain -- indice per AI", ""]
+    lines = ["# Vault index for AI", ""]
 
     for folder_name in find_content_dirs(vault_root):
         folder = vault_root / folder_name
@@ -67,7 +67,7 @@ def build_llms_txt(vault_root: Path) -> str:
 
         lines.append(f"## {folder_name}")
         if not md_files:
-            lines.append("(nessuna nota)")
+            lines.append("(no notes)")
             lines.append("")
             continue
 
@@ -86,13 +86,13 @@ def main():
     vault_root = vault_root.resolve()
 
     if not vault_root.exists():
-        print(f"Percorso non trovato: {vault_root}")
+        print(f"Path not found: {vault_root}")
         sys.exit(1)
 
     content = build_llms_txt(vault_root)
     out_path = vault_root / "llms.txt"
     out_path.write_text(content, encoding="utf-8")
-    print(f"Scritto: {out_path}")
+    print(f"Written: {out_path}")
 
 
 if __name__ == "__main__":
