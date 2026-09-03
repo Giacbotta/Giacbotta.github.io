@@ -31,7 +31,7 @@ real numbers, some reflections.
 - Customer acquisition cost.
 - My own hours on operations.
 
-One success criterion: margin up and my hours down, in the same week.
+One success criterion: margin up and my hours down.
 
 **WHAT I DO NOT WANT**
 
