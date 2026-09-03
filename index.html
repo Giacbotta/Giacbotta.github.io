@@ -175,7 +175,7 @@
 
   <h4>What I mean by brain</h4>
   <ul>
-    <li>One system that sees all the business data: bookings, occupancy, costs, ad spend, customer requests.</li>
+    <li><a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/vault">One system that sees all the business data</a>: bookings, occupancy, costs, ad spend, customer requests.</li>
     <li>On top of it, separate agents with one job each: pricing, ads, support, content, monitoring.</li>
     <li>I decide. They execute and report.</li>
   </ul>
@@ -223,7 +223,7 @@
   <p>Three areas. None of them sophisticated.</p>
   <ol>
     <li>User experience. Rewrote from scratch the guidelines, how you access it, how you use it.</li>
-    <li>Automation. Online booking and internal operations first. Then I mapped every possible customer problem, one by one, and automated or prevented most of them. Stated goal: cut inbound calls to the minimum.</li>
+    <li><a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/automations">Automation</a>. Online booking and internal operations first. Then I mapped every possible customer problem, one by one, and automated or prevented most of them. Stated goal: cut inbound calls to the minimum.</li>
     <li>Online selling. Basic level. I am not an expert and I did not pretend to be one.</li>
   </ol>
 
@@ -277,24 +277,17 @@
     <thead><tr><th>Layer</th><th>What it is</th></tr></thead>
     <tbody>
       <tr><td>Starting point</td><td>A setup recommended in a YouTube video, picked after comparing options.</td></tr>
-      <tr><td>Company brain</td><td>Obsidian. About 40 atomic notes to start, linked to each other.</td></tr>
-      <tr><td>Format enforcement</td><td>A small Python script that enforces the rules, so every note keeps the same format and links.</td></tr>
+      <tr><td>Company brain</td><td><a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/vault">Obsidian</a>. About 40 atomic notes to start, linked to each other.</td></tr>
+      <tr><td>Format enforcement</td><td><a href="https://github.com/Giacbotta/Giacbotta.github.io/blob/main/stack/vault/quality_gate.py">A small Python script</a> that enforces the rules, so every note keeps the same format and links.</td></tr>
       <tr><td>Agent runtime</td><td>Claude Code on a capped budget. An 80 euro a month plan is a real cost against these margins, so I am not committing to it until the return is visible.</td></tr>
-      <tr><td>Working layer</td><td>Google Drive. Sheets for reporting and as the base of the automations, with Google Scripts on top of them.</td></tr>
+      <tr><td>Working layer</td><td>Google Drive. Sheets for reporting and as <a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/automations">the base of the automations</a>, with Google Scripts on top of them.</td></tr>
     </tbody>
   </table>
 
   <h4>What I left out</h4>
   <p class="callout">No RAG. No MCP. Neither solves a problem I have today.</p>
 
-  <h4>The code</h4>
-  <p>
-    Published, with credentials and vendor hostnames replaced by placeholders.
-  </p>
-  <ul>
-    <li><a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/vault">stack/vault</a> — the rules the notes have to pass, the Python gate that enforces them, the templates, three real notes.</li>
-    <li><a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/automations">stack/automations</a> — the jobs that pull the two locker back offices and the analytics tool into Sheets, and the review request loop.</li>
-  </ul>
+  <p class="callout">Everything linked above is published in the repo, with credentials and vendor hostnames replaced by placeholders.</p>
 
   <p class="next">Next post: The First Wow.</p>
 </article>
