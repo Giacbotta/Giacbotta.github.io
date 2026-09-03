@@ -1,21 +1,21 @@
 ---
-title: "Sessione <DATA YYYY-MM-DD>"
-summary: <UNA frase su cosa e' stato fatto in questa sessione>
+title: "Session <DATE YYYY-MM-DD>"
+summary: <ONE sentence on what was done in this session>
 tags: [workspace, type/session]
 status: done
-created: <DATA YYYY-MM-DD>
-updated: <DATA YYYY-MM-DD>
-related: "<wikilink alle entita' toccate, separati da virgola, senza spazi dentro le doppie parentesi>"
+created: <DATE YYYY-MM-DD>
+updated: <DATE YYYY-MM-DD>
+related: "<wikilinks to the entities touched, comma separated, no spaces inside the double brackets>"
 ---
 
-## Fatto
+## Done
 
-<Cosa abbiamo concluso in questa sessione. Frasi brevi, italiano naturale.>
+<What we finished in this session. Short sentences, natural language.>
 
-## Deciso
+## Decided
 
-<Le scelte prese durante la sessione e il perche'. Se non ci sono state decisioni, scrivere "Nessuna decisione rilevante".>
+<The choices made during the session, and why. If there were none, write "No relevant decision".>
 
-## Aperto
+## Open
 
-<Cosa resta in sospeso, da riprendere nella prossima sessione o nel briefing "buongiorno". Se tutto e' chiuso, scrivere "Niente in sospeso".>
+<What is left hanging, to be picked up in the next session or at the morning briefing. If everything is closed, write "Nothing pending".>

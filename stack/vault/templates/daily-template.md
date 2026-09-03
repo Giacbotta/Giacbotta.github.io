@@ -1,26 +1,26 @@
 ---
-title: "Giornata <DATA YYYY-MM-DD>"
-summary: <UNA frase di sintesi su cosa e' successo in questa giornata>
+title: "Day <DATE YYYY-MM-DD>"
+summary: <ONE summary sentence on what happened during this day>
 tags: [workspace, type/daily]
 status: done
-created: <DATA YYYY-MM-DD>
-updated: <DATA YYYY-MM-DD>
-related: "<wikilink a tutte le sessioni della giornata e alle entita' principali toccate, separati da virgola, senza spazi dentro le doppie parentesi>"
+created: <DATE YYYY-MM-DD>
+updated: <DATE YYYY-MM-DD>
+related: "<wikilinks to every session of the day and to the main entities touched, comma separated, no spaces inside the double brackets>"
 ---
 
-## Fatto
+## Done
 
-<Sintesi unica della giornata: cosa e' stato concluso, fondendo le sessioni senza ripeterle riga per riga.>
+<A single summary of the day: what was finished, merging the sessions instead of repeating them line by line.>
 
-## Deciso
+## Decided
 
-<Sintesi delle scelte prese durante la giornata e il perche'.>
+<A summary of the choices made during the day, and why.>
 
-## Aperto
+## Open
 
-<Cosa resta in sospeso a fine giornata, da riprendere nel prossimo "buongiorno".>
+<What is left hanging at the end of the day, to be picked up at the next morning briefing.>
 
-## Sessioni
+## Sessions
 
-- <wikilink alla prima sessione della giornata>
-- <wikilink alla seconda sessione della giornata, se presente>
+- <wikilink to the first session of the day>
+- <wikilink to the second session of the day, if there was one>
