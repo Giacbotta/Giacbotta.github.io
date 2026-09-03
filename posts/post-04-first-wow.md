@@ -1,0 +1,34 @@
+# Post 4 / First wow
+
+First wow: the setup alone found the cause of a booking drop.
+
+The first surprise about having a [company brain](../stack/vault/) is that I got
+value before it was finished. Setting it up meant answering questions. A lot of
+them. What the machine understood was the interesting part: not just how each
+piece works, but how the pieces move each other. When it hit a gap in what I had
+told it, it asked again.
+
+Then it asked for access to the site. It saw a clean drop in online bookings,
+went looking for a cause, and pointed at broken links created when we changed the
+site to add the new location.
+
+**WHAT I DID**
+
+- Set up the company brain and answered its questions about how the business works.
+- Gave it access to the site so it could check what I had told it.
+- Read its explanation of the booking drop and the fix it proposed.
+- Fixed the broken links.
+
+**LEARNINGS**
+
+- I already knew bookings had dropped. I had promised myself I would find out why. I had not.
+- An AI that knows your systems finds issues you may have ignored.
+- It was a stupid bug that will probably not repeat.
+- The potential value of the brain is not letting unobserved issues stay uncovered.
+
+**NUMBERS**
+
+- Online bookings during the broken period: -65%.
+- Duration of the problem: 2 weeks.
+- Effect on the full month: -7.5% bookings.
+- Value of fixing it: 7.5% of monthly revenues, recovered.
