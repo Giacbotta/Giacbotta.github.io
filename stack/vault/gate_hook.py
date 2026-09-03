@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""
+Hook PostToolUse per Claude Code: dopo ogni Write/Edit, se il file toccato sta
+nel vault "Nutrie Brain", lancia il quality gate giusto e riferisce solo se
+trova qualcosa.
+
+- file sotto una cartella di contenuto   -> quality_gate.py <vault>
+- file sotto workspace/                   -> quality_gate.py <vault> --workspace
+- file sotto sources/ o fuori dal vault   -> non fa niente
+
+Il gate non modifica nulla. Se e' pulito, questo hook esce in silenzio (exit 0).
+Se trova errori, li stampa su stderr ed esce con codice 2, cosi' Claude li vede
+e li corregge nello stesso giro.
+
+Registrato in .claude/settings.json come hook PostToolUse con matcher "Write|Edit".
+"""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+# workspace/gate_hook.py -> parent.parent = "Nutrie Brain"
+VAULT = Path(__file__).resolve().parent.parent
+GATE = VAULT / "workspace" / "quality_gate.py"
+SKIP_UNDER = {"sources"}
+
+
+def read_event() -> dict:
+    try:
+        return json.load(sys.stdin)
+    except Exception:
+        return {}
+
+
+def edited_path(event: dict):
+    ti = event.get("tool_input") or {}
+    fp = ti.get("file_path") or ti.get("path")
+    if not fp:
+        return None
+    try:
+        return Path(fp).resolve()
+    except Exception:
+        return None
+
+
+def classify(path: Path):
+    """Ritorna 'content', 'workspace' o None (da ignorare)."""
+    try:
+        rel = path.relative_to(VAULT)
+    except ValueError:
+        return None
+    parts = rel.parts
+    if not parts or not path.name.endswith(".md"):
+        return None
+    top = parts[0]
+    if top in SKIP_UNDER:
+        return None
+    if top == "workspace":
+        return "workspace"
+    return "content"
+
+
+def main():
+    if not GATE.exists():
+        return 0
+    event = read_event()
+    path = edited_path(event)
+    if path is None:
+        return 0
+    kind = classify(path)
+    if kind is None:
+        return 0
+
+    cmd = [sys.executable, str(GATE), str(VAULT)]
+    if kind == "workspace":
+        cmd.append("--workspace")
+
+    try:
+        out = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    except Exception as e:
+        print(f"gate_hook: impossibile lanciare il quality gate ({e})", file=sys.stderr)
+        return 0
+
+    report = (out.stdout or "") + (out.stderr or "")
+    if "OK, 0 errori" in report or "OK, 0 problemi" in report:
+        return 0
+
+    label = "workspace" if kind == "workspace" else "contenuti"
+    print(
+        f"Quality gate ({label}) dopo la modifica di {path.name}:\n\n{report.strip()}",
+        file=sys.stderr,
+    )
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

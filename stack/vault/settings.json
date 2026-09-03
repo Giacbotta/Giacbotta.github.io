@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:/path/to/vault/<Vault Name>/workspace/gate_hook.py\"",
+            "timeout": 60,
+            "statusMessage": "Quality gate del vault"
+          }
+        ]
+      }
+    ]
+  }
+}
