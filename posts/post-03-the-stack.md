@@ -32,4 +32,11 @@ proves it is needed. Here is what I am running today.
 
 - No RAG. No MCP. Neither solves a problem I have today.
 
+**THE CODE**
+
+Published, with credentials and vendor hostnames replaced by placeholders.
+
+- [`stack/vault/`](../stack/vault/) — the rules the notes have to pass, the Python gate that enforces them, the templates, three real notes.
+- [`stack/automations/`](../stack/automations/) — the jobs that pull the two locker back offices and the analytics tool into Sheets, and the review request loop.
+
 Next post: The First Wow.
