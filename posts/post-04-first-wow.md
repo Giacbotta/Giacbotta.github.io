@@ -12,19 +12,12 @@ Then it asked for access to the site. It saw a clean drop in online bookings,
 went looking for a cause, and pointed at broken links created when we changed the
 site to add the new location.
 
-**WHAT I DID**
-
-- Set up the company brain and answered its questions about how the business works.
-- Gave it access to the site so it could check what I had told it.
-- Read its explanation of the booking drop and the fix it proposed.
-- Fixed the broken links.
-
 **LEARNINGS**
 
-- I already knew bookings had dropped. I had promised myself I would find out why. I had not.
+- I already knew bookings had dropped. I had promised myself I would find out why. I had not. It was a stupid bug that will probably not repeat.
+  BUT...
 - An AI that knows your systems finds issues you may have ignored.
-- It was a stupid bug that will probably not repeat.
-- The potential value of the brain is not letting unobserved issues stay uncovered.
+- A potential value of the brain is not letting unobserved issues stay uncovered.
 
 **NUMBERS**
 
