@@ -20,7 +20,7 @@ these numbers.
 Three areas. None of them sophisticated.
 
 1. User experience. Rewrote from scratch the guidelines, how you access it, how you use it.
-2. Automation. Online booking and internal operations first. Then I mapped every possible customer problem, one by one, and automated or prevented most of them. Stated goal: cut inbound calls to the minimum.
+2. [Automation](../stack/automations/). Online booking and internal operations first. Then I mapped every possible customer problem, one by one, and automated or prevented most of them. Stated goal: cut inbound calls to the minimum.
 3. Online selling. Basic level. I am not an expert and I did not pretend to be one.
 
 **RESULT**

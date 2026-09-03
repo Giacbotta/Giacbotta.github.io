@@ -23,20 +23,16 @@ proves it is needed. Here is what I am running today.
 **THE STACK**
 
 - Starting point: a setup recommended in a YouTube video, picked after comparing options.
-- Obsidian as the company brain. About 40 atomic notes to start, linked to each other.
-- A small Python script that enforces the rules, so every note keeps the same format and links.
+- [Obsidian as the company brain](../stack/vault/). About 40 atomic notes to start, linked to each other.
+- [A small Python script that enforces the rules](../stack/vault/quality_gate.py), so every note keeps the same format and links.
 - Claude Code on a capped budget. An 80 euro a month plan is a real cost against these margins, so I am not committing to it until the return is visible.
-- Google Drive as the working layer. Sheets for reporting and as the base of the automations, with Google Scripts on top of them.
+- Google Drive as the working layer. Sheets for reporting and as [the base of the automations](../stack/automations/), with Google Scripts on top of them.
 
 **WHAT I LEFT OUT**
 
 - No RAG. No MCP. Neither solves a problem I have today.
 
-**THE CODE**
-
-Published, with credentials and vendor hostnames replaced by placeholders.
-
-- [`stack/vault/`](../stack/vault/) — the rules the notes have to pass, the Python gate that enforces them, the templates, three real notes.
-- [`stack/automations/`](../stack/automations/) — the jobs that pull the two locker back offices and the analytics tool into Sheets, and the review request loop.
+Everything linked above is published in this repo, with credentials and vendor
+hostnames replaced by placeholders.
 
 Next post: The First Wow.

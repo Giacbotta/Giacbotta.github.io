@@ -20,7 +20,7 @@ real numbers, some reflections.
 
 **WHAT I MEAN BY BRAIN**
 
-- One system that sees all the business data: bookings, occupancy, costs, ad spend, customer requests.
+- [One system that sees all the business data](../stack/vault/): bookings, occupancy, costs, ad spend, customer requests.
 - On top of it, separate agents with one job each: pricing, ads, support, content, monitoring.
 - I decide. They execute and report.
 
