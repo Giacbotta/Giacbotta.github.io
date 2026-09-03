@@ -39,4 +39,4 @@ on margin, which is why it is a usable test bed.
 Total deposits. Revenues. Occupancy rate. Margins.
 Customer acquisition cost. Website sessions. Website conversion rate.
 
-Success criterion for the experiment: margin up and my hours down, in the same week.
+Success criterion for the experiment: margin up and my hours down.
