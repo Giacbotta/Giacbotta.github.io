@@ -1,6 +1,6 @@
 ---
-title: "Indice: concepts"
-summary: I concetti riutilizzabili del cervello di Nutrie — i canali di ricavo (onsite, marketplace, keybox), la stagionalità e l'economia unitaria per canale.
+title: "Index: concepts"
+summary: The reusable concepts of the company brain, the revenue channels (onsite, marketplace, keybox), seasonality and per-channel unit economics.
 tags: [concepts, index]
 status: draft
 created: 2026-07-30
@@ -8,15 +8,15 @@ updated: 2026-08-02
 related: "[[concetto-onsite]],[[concetto-marketplace]],[[concetto-keybox]],[[concetto-stagionalita]],[[concetto-ricavo-per-cliente]],[[concetto-forme-di-servizio-bagagli]]"
 ---
 
-## Cosa contiene questa cartella
+## What this folder holds
 
-La cartella `concepts/` contiene definizioni riutilizzabili, non legate a un singolo fatto o a una singola data:
+The `concepts/` folder holds reusable definitions, not tied to a single fact or a single date:
 
-- [[concetto-onsite]] — pagamento diretto in loco
-- [[concetto-marketplace]] — rivendita tramite piattaforme terze
-- [[concetto-keybox]] — ricavo del prodotto deposito chiavi B&B
-- [[concetto-stagionalita]] — il picco di ottobre osservato nel canale Booking
-- [[concetto-ricavo-per-cliente]] — quanto vale un cliente per canale, e il criterio per valutare le partnership
-- [[concetto-forme-di-servizio-bagagli]] — trasporto puro, deposito puro e forma integrata: chi vende cosa a Venezia
+- [[concetto-onsite]] - paying on site, at the kiosk
+- [[concetto-marketplace]] - resale through third party platforms
+- [[concetto-keybox]] - revenue from the B&B key deposit product
+- [[concetto-stagionalita]] - the October peak observed in the Booking channel
+- [[concetto-ricavo-per-cliente]] - what a customer is worth per channel, and the test for judging a partnership
+- [[concetto-forme-di-servizio-bagagli]] - pure transport, pure storage and the integrated form: who sells what in this market
 
-Insieme al canale "Booking" (non trattato come concetto a sé per scelta esplicita di scope, se non per la sua stagionalità), questi compongono lo schema di calcolo dei ricavi documentato in [[strumento-performance-nutrie]] e usato in [[kpi-2025]] e [[kpi-2024]].
+Together with the "Booking" channel (deliberately left out as a concept of its own, apart from its seasonality), these make up the revenue calculation documented in [[strumento-performance-nutrie]] and used in [[kpi-2025]] and [[kpi-2024]].

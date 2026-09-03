@@ -1,6 +1,6 @@
 # Example notes
 
-Three real notes from the vault, unedited. These are exactly what the gate checks.
+Three real notes from the vault. These are exactly what the gate checks.
 They carry no financial figures: the numbers get published in the posts, not here.
 
 | File | Kind | What it shows |
@@ -9,6 +9,10 @@ They carry no financial figures: the numbers get published in the posts, not her
 | `concetto-stagionalita.md` | Concept | A pattern claimed from two years of data, with the source named, the reason a whole channel was excluded, and a `## GAP` saying two cycles are not enough to call it stable. |
 | `prodotto-deposito-self-service.md` | Entity | A product note. Every claim carries the source and the date it was checked, and one gap is struck through with the date it was closed rather than deleted. |
 
-They are in Italian. The point is not the content: it is the shape. Frontmatter
-with six required fields, a body under 300 lines, at least three outgoing links
-to notes that exist, and a declared gap.
+The notes are translated from the Italian originals. Their file names and every
+`[[wikilink]]` target are left as they are, because those are the identifiers the
+vault uses, and several of the targets are notes that do not live in this repo.
+
+The point is not the content: it is the shape. Frontmatter with six required
+fields, a body under 300 lines, at least three outgoing links to notes that
+exist, and a declared gap.
