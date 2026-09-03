@@ -25,7 +25,8 @@ on margin, which is why it is a usable test bed.
 1. **The experiment.** Why this business, what I mean by brain, what I measure.
 2. **The baseline.** What we bought, what was wrong, what we changed, what it produced.
 3. **The technical foundation.** The stack, why it is deliberately small.
-4. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
+4. **First wow.** The setup found the cause of a booking drop I had stopped looking for.
+5. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
 
 ## Rules of the log
 
