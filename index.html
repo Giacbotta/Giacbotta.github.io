@@ -145,6 +145,7 @@
     <li><a href="#post-2"><span class="t">Where I started from<span class="d">What I found, what I changed, what it produced.</span></span></a></li>
     <li><a href="#post-3"><span class="t">The technical foundation<span class="d">The stack, and why it is deliberately small.</span></span></a></li>
     <li><a href="#post-4"><span class="t">First wow<span class="d">The setup found the cause of a booking drop I had stopped looking for.</span></span></a></li>
+    <li><a href="#post-5"><span class="t">Second wow<span class="d">A script I did not know to ask for, and the invisible bottleneck behind that.</span></span></a></li>
     <li class="pending">Weekly logs. Next one pending.</li>
   </ol>
 </section>
@@ -324,6 +325,50 @@
       <tr><td>Value of fixing it</td><td>7.5% of monthly revenues, recovered</td></tr>
     </tbody>
   </table>
+</article>
+
+<article id="post-5">
+  <p class="num">Post 05</p>
+  <h3>Second wow</h3>
+  <p class="lede">
+    I am not a technical person. I can build low code automations, but only with AI doing the
+    typing. I cannot tell what is possible or not possible to create even within my own
+    constraints.
+  </p>
+  <p>
+    I run two management systems from two different providers. Venice is the old one, inherited
+    with the business: I bought an existing operation, so the door to feature requests was already
+    shut. Pisa is the new one, built recently, and there I was waiting on the developer to build me
+    a data export.
+  </p>
+  <p>
+    In the meantime the numbers moved by hand. Every performance figure is calculated in Google
+    Sheets, and nothing was filling those sheets on its own.
+  </p>
+  <p>
+    I assumed an agent would have logged into each panel every day, copy-pasting the numbers.
+    Slow, heavy on tokens, probably not worth the effort.
+  </p>
+  <p>
+    What it proposed instead: a script that pulls the data itself, on a schedule, with no model
+    running and no tokens burned. One for
+    <a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/automations/venezia-export">Venice</a>, one for
+    <a href="https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/automations/pisa-export">Pisa</a>.
+  </p>
+
+  <h4>What it moves</h4>
+  <ul>
+    <li>Not margin. This one does not add a euro.</li>
+    <li>My hours. The copy is gone, and so is the waiting on someone else's roadmap. It's 10 minutes a day, but makes me happy.</li>
+  </ul>
+
+  <h4>Learnings: the real gain</h4>
+  <ul>
+    <li>To get something out of a chatbot you have to know it is possible. That is the bottleneck, and it is invisible.</li>
+    <li>I had already built scripts with a chatbot. Every one of them started from an idea I already had.</li>
+    <li>A brain that knows my systems proposes the thing I did not know to ask for.</li>
+  </ul>
+  <p class="callout">This gain is not high, but a lot more could come with a similar approach.</p>
 </article>
 
 <footer>

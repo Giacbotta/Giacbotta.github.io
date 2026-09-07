@@ -26,7 +26,8 @@ on margin, which is why it is a usable test bed.
 2. **The baseline.** What we bought, what was wrong, what we changed, what it produced.
 3. **The technical foundation.** The stack, why it is deliberately small.
 4. **First wow.** The setup found the cause of a booking drop I had stopped looking for.
-5. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
+5. **Second wow.** A script I did not know to ask for, and the invisible bottleneck behind that.
+6. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
 
 ## Rules of the log
 
