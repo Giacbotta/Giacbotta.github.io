@@ -29,7 +29,8 @@ on margin, which is why it is a usable test bed.
 5. **Second wow.** A script I did not know to ask for, and the invisible bottleneck behind that.
 6. **Productivity?** More done, more time spent, and no answer yet on whether it is the right work.
 7. **Setting goals.** Why the brain now gets goals, and a scale from easiest to hardest.
-8. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
+8. **SEO: on the limits of what is not real.** AI research says real customer feedback matters most. The rest was quick work.
+9. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
 
 ## Rules of the log
 
