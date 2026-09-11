@@ -7,8 +7,9 @@ of ETFs and I find the whole thing boring to death. I wanted to own something
 that behaved like an investment but was actually mine: a business that ran by
 itself, that I could keep building on top of, and that I could develop with a
 friend for the fun of it.
-And there was an obvious angle. My job is optimizing and automating processes for other companies. 
-Why not buy one and do it for myself?
+
+And there was an obvious angle. My job is optimizing and automating processes for
+other companies. Why not buy one and do it for myself?
 
 So we bought an automated luggage storage business in Venice. Small, local, low
 margin, very unglamorous. It worked. Now I want to run an experiment on it. If I
