@@ -1,5 +1,7 @@
 # Post 1 / The experiment
 
+![Post 1: The experiment](../assets/img/post-01-the-experiment.png)
+
 In 2023 I had money to invest and no interest in investing it. I hold my share
 of ETFs and I find the whole thing boring to death. I wanted to own something
 that behaved like an investment but was actually mine: a business that ran by

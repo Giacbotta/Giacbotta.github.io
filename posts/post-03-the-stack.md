@@ -1,5 +1,7 @@
 # Post 3 / The technical foundation
 
+![Post 3: The technical foundation](../assets/img/post-03-the-stack.png)
+
 The first decision was not which tools to use. It was how little to spend. This
 is a low margin business, and a stack with a fat monthly fee eats exactly the
 margin I am trying to grow. There is a second risk too: overkill.

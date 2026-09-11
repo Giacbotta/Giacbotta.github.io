@@ -1,5 +1,7 @@
 # Post 2 / Where I started from
 
+![Post 2: Where I started from](../assets/img/post-02-the-baseline.png)
+
 Before the experiment, the baseline. In 2023 I bought an automated luggage
 storage business from an owner who ran the physical side fine and had no idea
 how to sell it online (but paid an agency). Nothing was broken. The business was

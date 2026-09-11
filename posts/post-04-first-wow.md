@@ -1,5 +1,7 @@
 # Post 4 / First wow
 
+![Post 4: First wow](../assets/img/post-04-first-wow.png)
+
 The first surprise about having a [company brain](../stack/vault/) is that I got
 value before it was finished. Setting it up meant answering questions. A lot of
 them. What the machine understood was the interesting part: not just how each

@@ -1,5 +1,7 @@
 # Post 5 / Second wow
 
+![Post 5: Second wow](../assets/img/post-05-second-wow.png)
+
 I am not a technical person. I can build low code automations, but only with AI
 doing the typing. I cannot tell what is possible or not possible to create even
 within my own constraints.
