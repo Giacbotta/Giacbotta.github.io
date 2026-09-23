@@ -16,7 +16,7 @@ businesses built on the same logic.
 
 Not conversations. [Python scripts that read public sources](https://github.com/Giacbotta/nutrie-new-business-tracking), and keep reading them.
 
-- Average occupancy of luggage deposits in a given area. Running this every day on marketplace websites, I will have a pretty complete view soon.
+- [Average occupancy of luggage deposits in a given area](https://claude.ai/artifact/Eirj2AhdanFqMg72Co9wRS). Running this every day on marketplace websites, I will have a pretty complete view soon.
 - New listings for commercial premises.
 - New public tenders.
 - Resellers and third parties worth approaching.
