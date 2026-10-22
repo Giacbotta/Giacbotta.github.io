@@ -33,6 +33,7 @@ on margin, which is why it is a usable test bed.
 9. **Should I keep working like a human?** Efficiency the AI way, control the human way, and one website caught between them.
 10. **Ads, or on ambiguity.** Attribution is broken by design here, and Claude would not pick a goal.
 11. **New sites, an unexpected result.** The hardest goal on the scale, and the one where AI moved the needle most.
+12. **I am the problem.** A better goal removed the manual work I had been waiting on for months.
 12. Onwards: weekly logs. Numbers, what I did, what I learned, what is next.
 
 ## Rules of the log
