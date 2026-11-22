@@ -31,6 +31,7 @@ would make the published copy diverge from the one that runs.
 | --- | --- |
 | [`vault/`](vault/) | The rules the company brain runs on, the quality gate that enforces them, the note templates, and three real notes as examples. |
 | [`automations/`](automations/) | The jobs that pull data out of the locker panels and the analytics tool and land it in Sheets, plus the review request loop. |
+| [`new-sites/`](new-sites/) | One of the scripts that track competitors' occupancy across Italy, with a week of sample output. The full set runs privately. |
 
 ## Deliberately left out
 
