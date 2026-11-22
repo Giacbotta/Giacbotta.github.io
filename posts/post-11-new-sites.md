@@ -16,7 +16,7 @@ businesses built on the same logic.
 
 Not conversations. [Python scripts that read public sources](https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/new-sites), and keep reading them.
 
-- [Average occupancy of luggage deposits in a given area](https://claude.ai/artifact/Eirj2AhdanFqMg72Co9wRS). It runs every day on marketplace websites. I already have a pretty complete view. Seasonality is still missing.
+- [Average occupancy of luggage deposits in a given area](https://giacbotta.github.io/occupancy/). It runs every day on marketplace websites. I already have a pretty complete view. Seasonality is still missing.
 - New listings for commercial premises.
 - New public tenders.
 - Resellers and third parties worth approaching.
