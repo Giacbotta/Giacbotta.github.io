@@ -14,7 +14,7 @@ businesses built on the same logic.
 
 **WHAT ACTUALLY WORKS**
 
-Not conversations. [Python scripts that read public sources](https://github.com/Giacbotta/nutrie-new-business-tracking), and keep reading them.
+Not conversations. [Python scripts that read public sources](https://github.com/Giacbotta/Giacbotta.github.io/tree/main/stack/new-sites), and keep reading them.
 
 - [Average occupancy of luggage deposits in a given area](https://claude.ai/artifact/Eirj2AhdanFqMg72Co9wRS). It runs every day on marketplace websites. I already have a pretty complete view. Seasonality is still missing.
 - New listings for commercial premises.
